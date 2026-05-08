@@ -2877,7 +2877,7 @@ function renderCards(cards) {
             
             // Nút Ngôi sao
             let starHTML = `<div class="star-btn ${isStarred ? 'active' : ''}" onclick="toggleStar('${card.id}', event)">★</div>`;
-            
+     let micHTML = `<span class="mic-btn" title="Luyện đọc" onclick="startRecognition('${safeKr}', event)" style="cursor:pointer; font-size:1.4rem; margin-left:10px; display:inline-block; vertical-align:middle;">🎤</span>`;
             // Nút Loa
             let speakerHTML = `<span class="speaker-btn" title="Nghe phát âm" onclick="speakKorean('${safeKr}', event)" style="cursor:pointer; font-size:1.4rem; margin-left:10px; display:inline-block; vertical-align:middle;">🔊</span>`;
 
@@ -2911,7 +2911,7 @@ function renderCards(cards) {
             } else if (isQuiz) {
                 // CHẾ ĐỘ LUYỆN GÕ
                 div.innerHTML = starHTML + `
-                    <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML}</div>
+            <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
                     <input type="text" class="quiz-input" placeholder="Gõ..." onkeyup="checkInlineAnswer(this, event, '${safeKr}')">
                     <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
                         <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
@@ -2927,7 +2927,7 @@ function renderCards(cards) {
                     ${imageHTML}
                     <div class="vn-text" style="font-weight: 600;">${card.vn || ''}</div>
                     <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span> ${speakerHTML}
+                      <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span> ${speakerHTML} ${micHTML}
                         <div style="font-size:0.85rem; color:#888; margin-top:5px;">${card.note || ''}</div>
                     </div>
                 `;
@@ -3027,6 +3027,53 @@ function renderCards(cards) {
     window.onload = function() {
         renderCards(data);
     };
+	// HÀM NHẬN DIỆN GIỌNG NÓI HÀN QUỐC
+    function startRecognition(correctText, event) {
+        if (event) event.stopPropagation(); // Ngăn việc nhấn mic làm lật thẻ
+        
+        // Kiểm tra xem trình duyệt có hỗ trợ không
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Trình duyệt không hỗ trợ. Hãy dùng Google Chrome nhé!");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ko-KR'; // Cài đặt ngôn ngữ nghe là tiếng Hàn
+        recognition.start(); // Bắt đầu nghe
+
+        // Báo hiệu đang nghe
+        let originalText = event.target.innerText;
+        event.target.innerText = "⏳"; 
+
+        recognition.onresult = function(e) {
+            event.target.innerText = originalText; // Trả lại icon mic
+            const speechToText = e.results[0][0].transcript;
+            
+            // Xóa khoảng trắng để so sánh dễ đúng hơn
+            const cleanUserSpeech = speechToText.replace(/[\s.,?!~()]/g, '');
+            const cleanCorrectText = correctText.replace(/[\s.,?!~()]/g, '');
+
+            if (cleanUserSpeech === cleanCorrectText) {
+                alert("Bạn đọc là: " + speechToText + "\n\n🎉 CHUẨN QUÁ!");
+            } else {
+                alert("Bạn đọc là: " + speechToText + "\n\n❌ Gần đúng rồi, nghe loa đọc lại nhé. Đáp án đúng: " + correctText);
+            }
+        };
+
+       recognition.onerror = function(e) {
+            event.target.innerText = originalText; // Trả lại icon mic
+            
+            if (e.error === 'aborted') {
+                // Lỗi này hay xảy ra do chạy file offline, ta bỏ qua không hiện thông báo
+                console.log("Đã hủy thu âm.");
+            } else if (e.error === 'not-allowed') {
+                alert("Bạn chưa cấp quyền Micro! Hãy nhấn 'Cho phép' trên góc trái trình duyệt nhé.");
+            } else {
+                alert("Có lỗi thu âm: " + e.error);
+            }
+        };
+    }
 </script>
 </body>
 </html>
