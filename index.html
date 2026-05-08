@@ -3222,6 +3222,18 @@ function renderCards(cards) {
         level = 1;
         updateGameUI();
     }
+	// ==========================================
+    // FIX LỖI BÀN PHÍM ĐIỆN THOẠI KHÔNG NHẬN ENTER
+    // ==========================================
+    document.addEventListener('change', function(e) {
+        // Nếu phát hiện có sự thay đổi ở bất kỳ ô nhập chữ nào
+        if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+            // Tự động ép hệ thống chạy hàm kiểm tra (giả lập phím Enter)
+            if (typeof e.target.onkeyup === 'function') {
+                e.target.onkeyup({ key: 'Enter', keyCode: 13, type: 'change' });
+            }
+        }
+    });
 </script>
 <div id="translate-tooltip" onclick="openTranslate()">Dịch 🌐</div>
 </body>
