@@ -137,6 +137,37 @@
     margin-top: 15px;
     line-height: 1.6;
 }
+/* --- CSS CHO NÚT BÔI ĐEN ĐỂ DỊCH --- */
+#translate-tooltip {
+    position: absolute;
+    display: none;
+    background-color: #2c3e50;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: opacity 0.2s;
+}
+
+/* Tạo cái mũi tên nhỏ chỉ xuống dưới nút */
+#translate-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #2c3e50 transparent transparent transparent;
+}
+
+#translate-tooltip:hover {
+    background-color: #1a252f;
+}
     </style>
 </head>
 <body>
@@ -197,6 +228,13 @@
             <button onclick="nextFlashcard()" style="background: var(--topik-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem;">Câu tiếp theo</button>
         </div>
     </div>
+	<div id="game-stats" style="display: none; background: #2c3e50; color: white; padding: 12px 20px; border-radius: 12px; margin-bottom: 20px; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+    <div style="font-weight: bold; font-size: 1.1rem;">
+        CẤP: <span id="level-display" style="color: #2ed573;">1</span> 
+        <span style="font-size: 0.9rem; color: #ccc;">(EXP: <span id="exp-display">0</span>/<span id="exp-need">50</span>)</span>
+    </div>
+    <div id="hp-display" style="color: #ff4757; font-size: 1.3rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
+</div>
     <div id="card-container"></div>
 </div>
 
@@ -2985,23 +3023,62 @@ function renderCards(cards) {
             return;
         }
         
-        if (userVal === correctVal) {
+      if (userVal === correctVal) {
             inputElement.classList.add('quiz-correct');
             if(krText) krText.style.display = 'block';
             speakKorean(correctAnswer, null); 
+            
+            // XỬ LÝ CỘNG KINH NGHIỆM (Chỉ cộng 1 lần cho mỗi từ)
+            if (!inputElement.hasAttribute('data-passed')) {
+                inputElement.setAttribute('data-passed', 'true');
+                exp += 10;
+                let expNeeded = level * 50;
+                
+                // Hiệu ứng lên cấp
+                if (exp >= expNeeded) {
+                    level++;
+                    exp = 0;
+                    currentHp = maxHp; // Lên cấp được hồi đầy máu
+                    alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
+                }
+                updateGameUI();
+            }
+
         } else if (event.key === 'Enter') {
             inputElement.classList.add('quiz-wrong');
             if(krText) krText.style.display = 'block';
-        }
-    }
 
-    function toggleQuizMode(btn) {
+            // XỬ LÝ TRỪ MÁU
+            if (!inputElement.hasAttribute('data-passed') && !inputElement.hasAttribute('data-wrong-once')) {
+                inputElement.setAttribute('data-wrong-once', 'true'); // Đánh dấu đã sai 1 lần để không trừ máu liên tục ở 1 chữ
+                currentHp -= 1;
+                updateGameUI();
+                
+                if (currentHp <= 0) {
+                    // Rung màn hình nhẹ khi chết
+                    document.body.style.animation = "shake 0.5s";
+                    setTimeout(() => document.body.style.animation = "", 500);
+                    
+                    alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
+                    resetGame();
+                    filterCards(); // Tải lại bài học
+                }
+            }
+        }
+}
+  function toggleQuizMode(btn) {
         isQuiz = !isQuiz;
         btn.style.background = isQuiz ? '#009688' : '';
         btn.style.color = isQuiz ? '#fff' : '';
+        
+        // --- CODE THÊM MỚI ---
+        let gameStats = document.getElementById('game-stats');
+        if (gameStats) gameStats.style.display = isQuiz ? 'flex' : 'none';
+        if (isQuiz) resetGame(); // Bật chế độ Luyện gõ thì tự động nạp đầy máu
+        // --------------------
+
         filterCards();
     }
-
     function toggleMenu() {
         var menu = document.getElementById('sidebar');
         var overlay = document.getElementById('overlay');
@@ -3074,6 +3151,78 @@ function renderCards(cards) {
             }
         };
     }
+	// ==========================================
+    // CHỨC NĂNG BÔI ĐEN ĐỂ DỊCH
+    // ==========================================
+    let selectedTextToTranslate = "";
+
+    // Bắt sự kiện nhả chuột (khi bôi đen xong)
+    document.addEventListener('mouseup', function(e) {
+        const tooltip = document.getElementById('translate-tooltip');
+        const selection = window.getSelection();
+        selectedTextToTranslate = selection.toString().trim();
+
+        // Nếu có bôi đen chữ
+        if (selectedTextToTranslate.length > 0) {
+            // Lấy tọa độ của đoạn chữ vừa bôi đen
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            // Tính toán vị trí để nút dịch nổi lên chính giữa bên trên đoạn chữ
+            tooltip.style.display = 'block';
+            tooltip.style.left = (rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2)) + window.scrollX + 'px';
+            tooltip.style.top = (rect.top - 40) + window.scrollY + 'px'; // Cách lên trên 40px
+        } else {
+            // Nếu click ra ngoài thì ẩn nút đi
+            if (e.target.id !== 'translate-tooltip') {
+                tooltip.style.display = 'none';
+            }
+        }
+    });
+
+    // Hàm mở Google Dịch khi bấm vào nút
+    function openTranslate() {
+        if (selectedTextToTranslate) {
+            // Cài đặt mặc định Dịch từ Tiếng Hàn sang Tiếng Việt
+            const url = `https://translate.google.com/?sl=ko&tl=vi&text=${encodeURIComponent(selectedTextToTranslate)}&op=translate`;
+            
+            // Mở một cửa sổ popup nhỏ gọn, không làm mất trang web hiện tại
+            window.open(url, 'GoogleTranslate', 'width=800,height=600,top=100,left=200');
+            
+            // Ẩn nút và bỏ bôi đen sau khi dịch xong
+            document.getElementById('translate-tooltip').style.display = 'none';
+            window.getSelection().removeAllRanges(); 
+        }
+    }
+// ==========================================
+    // HỆ THỐNG MÁU (HP) VÀ CÀY CẤP (EXP)
+    // ==========================================
+    let maxHp = 5;
+    let currentHp = 5;
+    let exp = 0;
+    let level = 1;
+
+    function updateGameUI() {
+        // Cập nhật Máu
+        let hpString = "";
+        for(let i = 0; i < currentHp; i++) hpString += "❤️";
+        for(let i = currentHp; i < maxHp; i++) hpString += "🖤"; // Máu đã mất
+        document.getElementById('hp-display').innerText = hpString;
+        
+        // Cập nhật Cấp & EXP
+        let expNeeded = level * 50;
+        document.getElementById('level-display').innerText = level;
+        document.getElementById('exp-display').innerText = exp;
+        document.getElementById('exp-need').innerText = expNeeded;
+    }
+
+    function resetGame() {
+        currentHp = maxHp;
+        exp = 0;
+        level = 1;
+        updateGameUI();
+    }
 </script>
+<div id="translate-tooltip" onclick="openTranslate()">Dịch 🌐</div>
 </body>
 </html>
