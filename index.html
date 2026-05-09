@@ -234,6 +234,10 @@
         <span style="font-size: 0.9rem; color: #ccc;">(EXP: <span id="exp-display">0</span>/<span id="exp-need">50</span>)</span>
     </div>
     <div id="hp-display" style="color: #ff4757; font-size: 1.3rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
+	<button id="show-answer-btn" onclick="toggleShowAnswer()" style="padding: 8px 15px; margin: 10px 5px; border-radius: 8px; border: none; background-color: #e74c3c; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    🙈 Đang ẨN đáp án khi sai
+</button>
+<button id="god-mode-btn" data-god="false" onclick="toggleGodMode()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; transition: 0.3s;" title="Bật/Tắt Bất Tử">🛡️</button>	
 </div>
     <div id="card-container"></div>
 </div>
@@ -3201,7 +3205,116 @@ function renderCards(cards) {
     let currentHp = 5;
     let exp = 0;
     let level = 1;
+let isGodMode = false; // Mặc định là tắt bất tử
+// Biến kiểm soát việc hiện đáp án (Mặc định: false - Ẩn đáp án)
+let isAutoShowAnswer = false; 
 
+// Hàm bật/tắt đáp án
+function toggleShowAnswer() {
+    let btn = document.getElementById('show-answer-btn');
+    if (!btn) return;
+    
+    isAutoShowAnswer = !isAutoShowAnswer; // Đảo ngược trạng thái
+    
+    if (isAutoShowAnswer) {
+        btn.innerText = "👁️ Đang HIỆN đáp án khi sai";
+        btn.style.backgroundColor = "#2ecc71"; // Đổi sang màu Xanh lá
+    } else {
+        btn.innerText = "🙈 Đang ẨN đáp án khi sai";
+        btn.style.backgroundColor = "#e74c3c"; // Đổi về màu Đỏ
+    }
+}
+function toggleGodMode() {
+        let btn = document.getElementById('god-mode-btn');
+        if (!btn) return;
+        
+        // Kiểm tra xem khoá đang bật hay tắt
+        let currentState = btn.getAttribute('data-god');
+        
+        if (currentState === 'false') {
+            btn.setAttribute('data-god', 'true'); // Chốt khoá Bật
+            isGodMode = true; /* THÊM DÒNG NÀY ĐỂ BẬT BẤT TỬ */
+            btn.style.textShadow = "0 0 15px #f1c40f"; 
+            btn.innerText = "🌟"; 
+            alert("🛡️ Đã bật chế độ BẤT TỬ! Tha hồ gõ sai không lo mất máu!");
+        } else {
+            btn.setAttribute('data-god', 'false'); // Chốt khoá Tắt
+            isGodMode = false; /* THÊM DÒNG NÀY ĐỂ TẮT BẤT TỬ */
+            btn.style.textShadow = "none";
+            btn.innerText = "🛡️"; 
+            alert("Đã tắt chế độ Bất tử. Trở lại sinh tồn khắc nghiệt!");
+        }
+    }
+  function checkInlineAnswer(inputElement, event, correctAnswer) {
+        let userVal = inputElement.value.trim().toLowerCase().replace(/[\s.,?!~()]/g, '');
+        let correctVal = correctAnswer.trim().toLowerCase().replace(/[\s.,?!~()]/g, '');
+        let krText = inputElement.parentElement.querySelector('.kr-result-container');
+        
+        inputElement.classList.remove('quiz-correct', 'quiz-wrong');
+        
+        if (userVal === '') {
+            if(krText) krText.style.display = 'none';
+            return;
+        }
+        
+        if (userVal === correctVal) {
+            inputElement.classList.add('quiz-correct');
+            if(krText) krText.style.display = 'block';
+            speakKorean(correctAnswer, null); 
+            
+            // XỬ LÝ CỘNG KINH NGHIỆM
+            if (!inputElement.hasAttribute('data-passed')) {
+                inputElement.setAttribute('data-passed', 'true');
+                exp += 10;
+                let expNeeded = level * 50;
+                
+                // Hiệu ứng lên cấp
+                if (exp >= expNeeded) {
+                    level++;
+                    exp = 0;
+                    currentHp = maxHp; // Lên cấp được hồi đầy máu
+                    alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
+                }
+                updateGameUI();
+            }
+
+        } else if (event.key === 'Enter' || event.keyCode === 13 || event.code === 'Enter') {
+            inputElement.classList.add('quiz-wrong');
+            
+            // ==========================================
+            // TÍNH NĂNG MỚI: ẨN/HIỆN ĐÁP ÁN KHI GÕ SAI
+            // ==========================================
+            if (krText) {
+                if (isAutoShowAnswer === true) {
+                    krText.style.display = 'block'; // Đang bật nút -> HIỆN đáp án
+                } else {
+                    krText.style.display = 'none';  // Không bật nút -> ẨN đáp án
+                }
+            }
+
+            // ==========================================
+            // XỬ LÝ TRỪ MÁU KẾT HỢP BẤT TỬ
+            // ==========================================
+            if (!inputElement.hasAttribute('data-passed') && !inputElement.hasAttribute('data-wrong-once')) {
+                inputElement.setAttribute('data-wrong-once', 'true'); // Đánh dấu đã sai 1 lần 
+                
+                if (!isGodMode) { // NẾU KHÔNG BẬT KHIÊN THÌ MỚI TRỪ MÁU
+                    currentHp -= 1;
+                    updateGameUI();
+                    
+                    if (currentHp <= 0) {
+                        // Rung màn hình nhẹ khi chết
+                        document.body.style.animation = "shake 0.5s";
+                        setTimeout(() => document.body.style.animation = "", 500);
+                        
+                        alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
+                        resetGame();
+                        filterCards(); // Tải lại bài học
+                    }
+                }
+            }
+        }
+    }
     function updateGameUI() {
         // Cập nhật Máu
         let hpString = "";
@@ -3222,7 +3335,7 @@ function renderCards(cards) {
         level = 1;
         updateGameUI();
     }
-	// ==========================================
+// ==========================================
     // FIX LỖI BÀN PHÍM ĐIỆN THOẠI KHÔNG NHẬN ENTER
     // ==========================================
     document.addEventListener('change', function(e) {
