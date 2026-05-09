@@ -3049,61 +3049,54 @@ function toggleDarkMode() {
         if (isQuiz) filterCards(); 
     }
 
-    function checkMCAnswer(btn, isCorrect, correctText) {
-        if (btn.hasAttribute('data-clicked')) return; 
-        let parent = btn.parentElement;
-        let allBtns = parent.querySelectorAll('.mc-btn');
-        allBtns.forEach(b => b.setAttribute('data-clicked', 'true')); 
+   function checkMCAnswer(btn, isCorrect, correctText) {
+    if (btn.hasAttribute('data-clicked')) return; 
+    let parent = btn.parentElement;
+    let allBtns = parent.querySelectorAll('.mc-btn');
+    allBtns.forEach(b => b.setAttribute('data-clicked', 'true')); 
+    
+    let krText = parent.parentElement.querySelector('.kr-result-container');
+    
+    if (isCorrect) {
+        btn.style.backgroundColor = "#2ecc71"; 
+        btn.style.color = "white";
+        btn.style.borderColor = "#27ae60";
+        speakKorean(correctText, null);
+        if(krText) krText.style.display = 'block';
         
-        let krText = parent.parentElement.querySelector('.kr-result-container');
+        exp += 10;
+        let expNeeded = level * 50;
+     
+        updateGameUI();
+    } else {
+        btn.style.backgroundColor = "#e74c3c"; 
+        btn.style.color = "white";
+        btn.style.borderColor = "#c0392b";
         
-        if (isCorrect) {
-            btn.style.backgroundColor = "#2ecc71"; 
-            btn.style.color = "white";
-            btn.style.borderColor = "#27ae60";
-            speakKorean(correctText, null);
-            if(krText) krText.style.display = 'block';
-            
-            exp += 10;
-            let expNeeded = level * 50;
-            if (exp >= expNeeded) {
-                level++; exp = 0; currentHp = maxHp;
-                alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
+        if(krText) {
+            if (typeof isAutoShowAnswer !== 'undefined' && isAutoShowAnswer === true) {
+                krText.style.display = 'block';
             }
-            updateGameUI();
-        } else {
-            btn.style.backgroundColor = "#e74c3c"; 
-            btn.style.color = "white";
-            btn.style.borderColor = "#c0392b";
-            
-            if(krText) {
-                if (typeof isAutoShowAnswer !== 'undefined' && isAutoShowAnswer === true) {
-                    krText.style.display = 'block';
-                } else {
-                    krText.style.display = 'none';
-                }
-            }
-            
-            if (typeof isGodMode !== 'undefined' && !isGodMode) {
-                currentHp -= 1;
-                updateGameUI();
-                if (currentHp <= 0) {
-                    document.body.style.animation = "shake 0.5s";
-                    setTimeout(() => document.body.style.animation = "", 500);
-                    alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
-                    resetGame();
-                    filterCards();
-                }
-            }
-            
-            allBtns.forEach(b => {
-                if (b.getAttribute('data-correct') === 'true') {
-                    b.style.border = "3px solid #2ecc71";
-                    b.style.color = "#2ecc71";
-                }
-            });
         }
+        
+        if (typeof isGodMode !== 'undefined' && !isGodMode) {
+            currentHp -= 1;
+            updateGameUI();
+            if (currentHp <= 0) {
+                // ĐÃ XÓA THÔNG BÁO GAME OVER TẠI ĐÂY
+                resetGame();
+                filterCards();
+            }
+        }
+        
+        allBtns.forEach(b => {
+            if (b.getAttribute('data-correct') === 'true') {
+                b.style.border = "3px solid #2ecc71";
+                b.style.color = "#2ecc71";
+            }
+        });
     }
+}
 
     function renderCards(cards) {
         const container = document.getElementById('card-container');
@@ -3252,13 +3245,7 @@ function toggleDarkMode() {
                 exp += 10;
                 let expNeeded = level * 50;
                 
-                // Hiệu ứng lên cấp
-                if (exp >= expNeeded) {
-                    level++;
-                    exp = 0;
-                    currentHp = maxHp; // Lên cấp được hồi đầy máu
-                    alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
-                }
+             
                 updateGameUI();
             }
 
@@ -3277,7 +3264,7 @@ function toggleDarkMode() {
                     document.body.style.animation = "shake 0.5s";
                     setTimeout(() => document.body.style.animation = "", 500);
                     
-                    alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
+                  
                     resetGame();
                     filterCards(); // Tải lại bài học
                 }
@@ -3482,13 +3469,7 @@ function toggleGodMode() {
                 exp += 10;
                 let expNeeded = level * 50;
                 
-                // Hiệu ứng lên cấp
-                if (exp >= expNeeded) {
-                    level++;
-                    exp = 0;
-                    currentHp = maxHp; // Lên cấp được hồi đầy máu
-                    alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
-                }
+                
                 updateGameUI();
             }
 
