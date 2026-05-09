@@ -221,6 +221,55 @@ html body.dark-mode .mc-btn {
     color: #ffffff !important;
     border-color: #555 !important;
 }
+/* =========================================
+   CHIA MENU DANH MỤC THÀNH 2 HÀNG ĐỀU NHAU
+   ========================================= */
+.menu-2-hang {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important; /* Xếp 4 nút 1 hàng */
+    gap: 6px !important;
+    margin: 15px 0 !important;
+    width: 100% !important;
+}
+.menu-2-hang button {
+    margin: 0 !important;
+    padding: 8px 2px !important;
+    font-size: 0.85rem !important;
+    border-radius: 6px !important;
+    width: 100% !important;
+    text-align: center !important;
+}
+
+/* Tự động ép xuống 3 cột nếu màn hình điện thoại quá nhỏ */
+@media (max-width: 400px) {
+    .menu-2-hang {
+        grid-template-columns: repeat(3, 1fr) !important; 
+    }
+}
+/* =========================================
+   THUỐC ĐẶC TRỊ GIAO DIỆN ĐIỆN THOẠI 
+   ========================================= */
+.thanh-trang-thai {
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 15px; width: 100%;
+}
+.chu-cap-do { font-size: 1.15rem; font-weight: bold; color: #3498db; }
+.chu-mau { color: #ff4757; font-size: 1.3rem; letter-spacing: 3px; }
+
+/* KHI LÊN ĐIỆN THOẠI (Màn hình nhỏ hơn 500px) */
+@media (max-width: 500px) {
+    /* 1. Ép Cấp độ và Máu xếp thành 2 hàng căn giữa tuyệt đối */
+    .thanh-trang-thai {
+        flex-direction: column !important;
+        justify-content: center !important;
+        gap: 10px !important;
+    }
+    
+    /* 2. Ép Menu Danh mục thành 2 cột to (để không bị lẹm chữ "Luyện dịch") */
+    .menu-2-hang {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -252,7 +301,7 @@ html body.dark-mode .mc-btn {
         <button class="filter-btn" id="quiz-btn" style="margin-left:auto" onclick="toggleQuizMode(this)">Luyện Gõ ⌨️</button>
     </div>
 
-   <div class="filter-row" id="lesson-buttons">
+ <div class="menu-2-hang">
         <div class="row-title">CHỌN BÀI:</div>
         <button class="filter-btn active" onclick="setLesson('All', this)">Tất cả</button>
         <button class="filter-btn" onclick="setLesson('Bài 1', this)">Bài 1</button>
@@ -281,27 +330,34 @@ html body.dark-mode .mc-btn {
             <button onclick="nextFlashcard()" style="background: var(--topik-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem;">Câu tiếp theo</button>
         </div>
     </div>
-	<div id="game-stats" style="display: none; background: #2c3e50; color: white; padding: 12px 20px; border-radius: 12px; margin-bottom: 20px; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-    <div style="font-weight: bold; font-size: 1.1rem;">
-        CẤP: <span id="level-display" style="color: #2ed573;">1</span> 
-        <span style="font-size: 0.9rem; color: #ccc;">(EXP: <span id="exp-display">0</span>/<span id="exp-need">50</span>)</span>
+<div style="background: #ffffff; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px 0; border: 1px solid #eee; text-align: center;">
+    
+    <div style="font-weight: bold; color: #3498db; font-size: 1.1rem; margin-bottom: 10px;">
+        ⭐ Cấp <span id="level-display">1</span> (EXP: <span id="exp-display">0</span>/<span id="exp-need">50</span>)
     </div>
-    <div id="hp-display" style="color: #ff4757; font-size: 1.3rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
-	<button id="show-answer-btn" onclick="toggleShowAnswer()" style="padding: 8px 15px; margin: 10px 5px; border-radius: 8px; border: none; background-color: #e74c3c; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-    🙈 Đang ẨN đáp án khi sai
-	<button id="mc-mode-btn" onclick="toggleMultipleChoice()" style="background: #9b59b6; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px;">🔘 Trắc nghiệm</button>
-	<button id="dark-mode-btn" onclick="toggleDarkMode()" style="background: #2c3e50; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px;">🌙 Ban đêm</button>
-</button>
-<button id="god-mode-btn" data-god="false" onclick="toggleGodMode()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; transition: 0.3s;" title="Bật/Tắt Bất Tử">🛡️</button>	
+
+    <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
+        <div id="hp-display" style="color: #ff4757; font-size: 1.4rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
+        <button id="god-mode-btn" data-god="false" onclick="toggleGodMode()" style="background: #f8f9fa; border: 1px solid #ddd; font-size: 1.5rem; cursor: pointer; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" title="Bật/Tắt Bất Tử">🛡️</button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button id="dark-mode-btn" onclick="toggleDarkMode()" style="background: #2c3e50; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">🌙 Ban đêm</button>
+        
+        <button id="show-answer-btn" onclick="toggleShowAnswer()" style="background: #e74c3c; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer;">🙈 Ẩn đáp án</button>
+        
+        <button id="mc-mode-btn" onclick="toggleMultipleChoice()" style="grid-column: span 2; background: #9b59b6; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 1.05rem; cursor: pointer;">🔘 Chế độ: TRẮC NGHIỆM</button>
+    </div>
 </div>
     <div id="card-container"></div>
 </div>
 
-<div id="test-screen">
-    <div style="display:flex;justify-content:space-between;border-bottom:2px solid var(--topik-blue);padding-bottom:10px">
-        <div id="timer" style="font-weight:bold;color:var(--primary)">40:00</div>
-        <button onclick="closeTest()">✕</button>
+<div class="thanh-trang-thai">
+    <div class="chu-cap-do">
+        ⭐ Cấp <span id="level-display">1</span> (EXP: <span id="exp-display">0</span>/<span id="exp-need">50</span>)
     </div>
+    <div id="hp-display" class="chu-mau">❤️❤️❤️❤️❤️</div>
+</div>
     <div id="test-content" style="margin-top:20px"></div>
     <div style="display:flex;justify-content:space-between;margin-top:20px">
         <button onclick="prevQuestion()">Câu trước</button>
