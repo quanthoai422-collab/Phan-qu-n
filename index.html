@@ -168,6 +168,59 @@
 #translate-tooltip:hover {
     background-color: #1a252f;
 }
+/* =========================================
+   GIAO DIỆN CHẾ ĐỘ BAN ĐÊM (DARK MODE)
+   ========================================= */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+body.dark-mode .container,
+body.dark-mode .flashcard {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+body.dark-mode input[type="text"] {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border: 1px solid #555;
+}
+body.dark-mode input[type="text"]:focus {
+    border-color: #4db8ff;
+    box-shadow: 0 0 8px rgba(77, 184, 255, 0.5);
+}
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+    color: #4db8ff;
+}
+/* ÉP BUỘC CHỮ TIẾNG VIỆT VÀ TIẾNG HÀN THÀNH MÀU TRẮNG TRONG BAN ĐÊM */
+html body.dark-mode .vn-text,
+html body.dark-mode .vn-text *,
+html body.dark-mode div.kr-result-container,
+html body.dark-mode div.kr-result-container *,
+html body.dark-mode .flashcard .kr-result-container,
+html body.dark-mode .flashcard .kr-result-container * {
+    color: #ffffff !important;
+    text-shadow: none !important;
+}
+/* SỬA LỖI MÀU Ô NHẬP CHỮ KHI GÕ ĐÚNG/SAI TRONG BAN ĐÊM */
+html body.dark-mode input[type="text"].quiz-wrong {
+    background-color: #3b0000 !important; /* Nền đỏ tối */
+    color: #ffffff !important; /* Chữ trắng dễ đọc */
+    border: 2px solid #ff4d4d !important; /* Viền đỏ sáng */
+}
+
+html body.dark-mode input[type="text"].quiz-correct {
+    background-color: #003311 !important; /* Nền xanh lá tối */
+    color: #ffffff !important; /* Chữ trắng */
+    border: 2px solid #2ecc71 !important; /* Viền xanh lá sáng */
+}
+/* CSS CHO NÚT BẤM TRẮC NGHIỆM (BAN ĐÊM) */
+html body.dark-mode .mc-btn {
+    background-color: #2c2c2c !important;
+    color: #ffffff !important;
+    border-color: #555 !important;
+}
     </style>
 </head>
 <body>
@@ -236,6 +289,8 @@
     <div id="hp-display" style="color: #ff4757; font-size: 1.3rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
 	<button id="show-answer-btn" onclick="toggleShowAnswer()" style="padding: 8px 15px; margin: 10px 5px; border-radius: 8px; border: none; background-color: #e74c3c; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     🙈 Đang ẨN đáp án khi sai
+	<button id="mc-mode-btn" onclick="toggleMultipleChoice()" style="background: #9b59b6; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px;">🔘 Trắc nghiệm</button>
+	<button id="dark-mode-btn" onclick="toggleDarkMode()" style="background: #2c3e50; color: white; border: none; padding: 5px 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px;">🌙 Ban đêm</button>
 </button>
 <button id="god-mode-btn" data-god="false" onclick="toggleGodMode()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-right: 15px; transition: 0.3s;" title="Bật/Tắt Bất Tử">🛡️</button>	
 </div>
@@ -256,6 +311,22 @@
 </div>
 
 <script>
+// Tính năng Ban Đêm
+let isDarkMode = false;
+function toggleDarkMode() {
+    let btn = document.getElementById('dark-mode-btn');
+    isDarkMode = !isDarkMode; // Đảo trạng thái
+    
+    if(isDarkMode) {
+        document.body.classList.add('dark-mode');
+        btn.innerText = "☀️ Ban ngày";
+        btn.style.backgroundColor = "#f39c12"; // Nút đổi màu vàng
+    } else {
+        document.body.classList.remove('dark-mode');
+        btn.innerText = "🌙 Ban đêm";
+        btn.style.backgroundColor = "#2c3e50"; // Nút đổi màu đen
+    }
+}
 
     var currentCat = 'All'; var currentLes = 'All'; var isQuiz = false;
 
@@ -2904,63 +2975,149 @@
     // ==========================================
     // 3. HIỂN THỊ THẺ & CHẾ ĐỘ LUYỆN NGHE / GÕ
     // ==========================================
-function renderCards(cards) {
+// ==========================================
+    // PHẦN MỚI: TRẮC NGHIỆM (MULTIPLE CHOICE)
+    // ==========================================
+    let isMultipleChoice = false;
+    function toggleMultipleChoice() {
+        let btn = document.getElementById('mc-mode-btn');
+        if (!btn) return;
+        isMultipleChoice = !isMultipleChoice;
+        if(isMultipleChoice) {
+            btn.innerText = "🔘 Đang: TRẮC NGHIỆM";
+            btn.style.backgroundColor = "#9b59b6";
+        } else {
+            btn.innerText = "⌨️ Đang: LUYỆN GÕ";
+            btn.style.backgroundColor = "#e67e22";
+        }
+        if (isQuiz) filterCards(); 
+    }
+
+    function checkMCAnswer(btn, isCorrect, correctText) {
+        if (btn.hasAttribute('data-clicked')) return; 
+        let parent = btn.parentElement;
+        let allBtns = parent.querySelectorAll('.mc-btn');
+        allBtns.forEach(b => b.setAttribute('data-clicked', 'true')); 
+        
+        let krText = parent.parentElement.querySelector('.kr-result-container');
+        
+        if (isCorrect) {
+            btn.style.backgroundColor = "#2ecc71"; 
+            btn.style.color = "white";
+            btn.style.borderColor = "#27ae60";
+            speakKorean(correctText, null);
+            if(krText) krText.style.display = 'block';
+            
+            exp += 10;
+            let expNeeded = level * 50;
+            if (exp >= expNeeded) {
+                level++; exp = 0; currentHp = maxHp;
+                alert("🎉 CHÚC MỪNG! BẠN ĐÃ LÊN CẤP " + level + "!\n(Máu của bạn đã được hồi đầy ❤️)");
+            }
+            updateGameUI();
+        } else {
+            btn.style.backgroundColor = "#e74c3c"; 
+            btn.style.color = "white";
+            btn.style.borderColor = "#c0392b";
+            
+            if(krText) {
+                if (typeof isAutoShowAnswer !== 'undefined' && isAutoShowAnswer === true) {
+                    krText.style.display = 'block';
+                } else {
+                    krText.style.display = 'none';
+                }
+            }
+            
+            if (typeof isGodMode !== 'undefined' && !isGodMode) {
+                currentHp -= 1;
+                updateGameUI();
+                if (currentHp <= 0) {
+                    document.body.style.animation = "shake 0.5s";
+                    setTimeout(() => document.body.style.animation = "", 500);
+                    alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
+                    resetGame();
+                    filterCards();
+                }
+            }
+            
+            allBtns.forEach(b => {
+                if (b.getAttribute('data-correct') === 'true') {
+                    b.style.border = "3px solid #2ecc71";
+                    b.style.color = "#2ecc71";
+                }
+            });
+        }
+    }
+
+    function renderCards(cards) {
         const container = document.getElementById('card-container');
         if (!container) return;
         container.innerHTML = '';
-        
         cards.forEach(card => {
             const div = document.createElement('div');
-            // Thêm class translate-card nếu là bài dịch để nó dàn hàng ngang
             div.className = 'flashcard' + ((card.type === 'translate' || card.type === 'practice') ? ' translate-card' : '');
-            
             let safeKr = (card.kr || '').replace(/'/g, "\\'");
             let isStarred = starredCards.includes(card.id);
             
-            // Nút Ngôi sao
             let starHTML = `<div class="star-btn ${isStarred ? 'active' : ''}" onclick="toggleStar('${card.id}', event)">★</div>`;
-     let micHTML = `<span class="mic-btn" title="Luyện đọc" onclick="startRecognition('${safeKr}', event)" style="cursor:pointer; font-size:1.4rem; margin-left:10px; display:inline-block; vertical-align:middle;">🎤</span>`;
-            // Nút Loa
+            let micHTML = `<span class="mic-btn" title="Luyện đọc" onclick="startRecognition('${safeKr}', event)" style="cursor:pointer; font-size:1.4rem; margin-left:10px; display:inline-block; vertical-align:middle;">🎤</span>`;
             let speakerHTML = `<span class="speaker-btn" title="Nghe phát âm" onclick="speakKorean('${safeKr}', event)" style="cursor:pointer; font-size:1.4rem; margin-left:10px; display:inline-block; vertical-align:middle;">🔊</span>`;
-
-            // LOGIC HIỂN THỊ ẢNH (Chỉ hiện khi sếp có gắn link ảnh vào dữ liệu)
+            
             let imageHTML = '';
             if (card.img) {
-                imageHTML = `
-                    <div style="text-align:center; margin: 10px 0; border-radius:8px; height:120px; overflow:hidden;">
-                        <img src="${card.img}" style="width:100%; height:100%; object-fit:contain;">
-                    </div>
-                `;
+                imageHTML = `<div style="text-align:center; margin: 10px 0; border-radius:8px; height:120px; overflow:hidden;"><img src="${card.img}" style="width:100%; height:100%; object-fit:contain;"></div>`;
             }
 
             if (currentCat === 'listening') {
-                // CHẾ ĐỘ LUYỆN NGHE
                 div.innerHTML = starHTML + `
                     <div style="padding: 15px 0;">
-                        <button onclick="speakKorean('${safeKr}', event)" style="background:var(--topik-blue); color:white; border:none; padding:12px 25px; border-radius:30px; font-size:1.1rem; cursor:pointer; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                            🎧 Nghe
-                        </button>
+                        <button onclick="speakKorean('${safeKr}', event)" style="background:var(--topik-blue); color:white; border:none; padding:12px 25px; border-radius:30px; font-size:1.1rem; cursor:pointer; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);"> 🎧 Nghe </button>
                     </div>
                     <div class="kr-result-container" style="display:none; text-align:center;">
                         ${imageHTML}
                         <div style="font-size:1.5rem; color:#d35400; font-weight:bold; margin-bottom:5px;">${card.kr}</div>
                         <div style="font-size:1.1rem; font-weight:600;">${card.vn || ''}</div>
                     </div>
-                    <button onclick="this.previousElementSibling.style.display = 'block'; this.style.display = 'none'; event.stopPropagation();" style="margin-top:10px; background:#f1f3f4; border:1px solid #ccc; padding:6px 15px; border-radius:15px; cursor:pointer; font-size:0.9rem; font-weight:bold; color:#555;">
-                        👀 Đáp án
-                    </button>
+                    <button onclick="this.previousElementSibling.style.display = 'block'; this.style.display = 'none'; event.stopPropagation();" style="margin-top:10px; background:#f1f3f4; border:1px solid #ccc; padding:6px 15px; border-radius:15px; cursor:pointer; font-size:0.9rem; font-weight:bold; color:#555;"> 👀 Đáp án </button>
                 `;
             } else if (isQuiz) {
-                // CHẾ ĐỘ LUYỆN GÕ
-                div.innerHTML = starHTML + `
-            <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
-                    <input type="text" class="quiz-input" placeholder="Gõ..." onkeyup="checkInlineAnswer(this, event, '${safeKr}')">
-                    <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
-                    </div>
-                `;
+                if (isMultipleChoice) {
+                    let options = [card.kr];
+                    let loopCount = 0;
+                    while(options.length < 4 && loopCount < 50) {
+                        let randomCard = data[Math.floor(Math.random() * data.length)];
+                        if (!options.includes(randomCard.kr) && randomCard.kr) {
+                            options.push(randomCard.kr);
+                        }
+                        loopCount++;
+                    }
+                    options.sort(() => Math.random() - 0.5); 
+                    
+                    let buttonsHTML = options.map(opt => {
+                        let isCorrect = (opt === card.kr);
+                        let safeOpt = opt.replace(/'/g, "\\'");
+                        return `<button class="mc-btn" data-correct="${isCorrect}" onclick="checkMCAnswer(this, ${isCorrect}, '${safeKr}')" style="display:block; width:100%; margin:8px 0; padding:12px; border-radius:8px; border:2px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:1.1rem; font-weight:bold; cursor:pointer; transition:0.2s;">${opt}</button>`;
+                    }).join('');
+
+                    div.innerHTML = starHTML + `
+                        <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
+                        <div class="mc-container" style="margin-top:15px;">
+                            ${buttonsHTML}
+                        </div>
+                        <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
+                            <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = starHTML + `
+                        <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
+                        <input type="text" class="quiz-input" placeholder="Gõ..." onkeyup="checkInlineAnswer(this, event, '${safeKr}')">
+                        <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
+                            <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
+                        </div>
+                    `;
+                }
             } else {
-                // CHẾ ĐỘ BÌNH THƯỜNG
                 div.onclick = function() {
                     const res = this.querySelector('.kr-result-container');
                     if (res) res.style.display = (res.style.display === 'block' ? 'none' : 'block');
@@ -2969,7 +3126,8 @@ function renderCards(cards) {
                     ${imageHTML}
                     <div class="vn-text" style="font-weight: 600;">${card.vn || ''}</div>
                     <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                      <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span> ${speakerHTML} ${micHTML}
+                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
+                        ${speakerHTML} ${micHTML}
                         <div style="font-size:0.85rem; color:#888; margin-top:5px;">${card.note || ''}</div>
                     </div>
                 `;
