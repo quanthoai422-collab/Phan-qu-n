@@ -3543,10 +3543,9 @@ function toggleGodMode() {
         }
     });
 </script>
-<div id="translate-tooltip" onclick="openTranslate()">Dịch 🌐</div>
-	<div id="ai-tooltip" onclick="askHighlightedText()" style="display: none; position: absolute; background: #8e44ad; color: #fff; padding: 10px 18px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #fff; cursor: pointer;">Hỏi AI 🤖</div>
-
 <div onclick="document.getElementById('ai-modal').style.display='flex'" oncontextmenu="localStorage.removeItem('quan_gemini_key'); alert('Đã xóa Key cũ! Hãy gõ câu hỏi để nhập Key mới.'); return false;" style="position: fixed; bottom: 20px; right: 20px; background: #8e44ad; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; z-index: 9998; border: 2px solid white;">🤖</div>
+
+<div id="ai-tooltip" onclick="askHighlightedText()" style="display: none; position: absolute; background: #8e44ad; color: #fff; padding: 10px 18px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #fff; cursor: pointer;">Hỏi AI 🤖</div>
 
 <div id="ai-modal" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: flex-end; justify-content: center;">
     <div style="background: #fff; width: 100%; max-width: 600px; height: 80vh; border-top-left-radius: 25px; border-top-right-radius: 25px; display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif;">
@@ -3558,38 +3557,20 @@ function toggleGodMode() {
             <div style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 85%; color: #333; line-height: 1.5;">Chào Quân! Cần hỏi gì cứ gõ vào đây hoặc bôi đen chữ trên web nhé!</div>
         </div>
         <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: #fff; padding-bottom: 25px;">
-            <input type="text" id="ai-input" placeholder="Gõ câu hỏi để dán Key..." style="flex: 1; border: 1px solid #ddd; padding: 12px 20px; border-radius: 30px; outline: none; font-size: 16px;">
+            <input type="text" id="ai-input" placeholder="Gõ câu hỏi..." style="flex: 1; border: 1px solid #ddd; padding: 12px 20px; border-radius: 30px; outline: none; font-size: 16px;" onkeypress="if(event.key === 'Enter') sendCustomQuestion()">
             <button onclick="sendCustomQuestion()" style="background: #8e44ad; color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">🚀</button>
         </div>
     </div>
 </div>
 
 <script>
-const aiHTML = `
-<div id="ai-tooltip" onclick="askHighlightedText()" style="display: none; position: absolute; background: #8e44ad; color: #fff; padding: 10px 18px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #fff; cursor: pointer;">Hỏi AI 🤖</div>
-<div id="robot-btn" onclick="document.getElementById('ai-modal').style.display='flex'" oncontextmenu="localStorage.removeItem('quan_gemini_key'); alert('Đã xóa Key! Quân gõ câu hỏi để nhập mã mới.'); return false;" style="position: fixed; bottom: 20px; right: 20px; background: #8e44ad; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; z-index: 9998; border: 2px solid white;">🤖</div>
-<div id="ai-modal" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: flex-end; justify-content: center;">
-    <div style="background: #fff; width: 100%; max-width: 600px; height: 80vh; border-top-left-radius: 25px; border-top-right-radius: 25px; display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif;">
-        <div style="padding: 15px 20px; background: #8e44ad; color: #fff; display: flex; justify-content: space-between; align-items: center;">
-            <strong style="font-size: 1.2rem; margin:0;">🤖 Gia Sư Gemini (Bản Proxy)</strong>
-            <span onclick="document.getElementById('ai-modal').style.display='none'" style="font-size: 2.2rem; cursor: pointer; line-height: 1;">&times;</span>
-        </div>
-        <div id="ai-chat-box" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 15px;">
-            <div style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 85%; color: #333; line-height: 1.5;">Chào Quân! Hãy gõ một câu để bắt đầu học nhé.</div>
-        </div>
-        <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: #fff; padding-bottom: 25px;">
-            <input type="text" id="ai-input" placeholder="Hỏi AI..." style="flex: 1; border: 1px solid #ddd; padding: 12px 20px; border-radius: 30px; outline: none; font-size: 16px;">
-            <button onclick="sendCustomQuestion()" style="background: #8e44ad; color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">🚀</button>
-        </div>
-    </div>
-</div>`;
-document.body.insertAdjacentHTML('beforeend', aiHTML);
-
+// Logic bôi đen văn bản hiện nút Hỏi AI
 let selectedTextForAI = "";
 document.addEventListener('mouseup', (e) => {
     let selection = window.getSelection();
     selectedTextForAI = selection.toString().trim();
     let tooltip = document.getElementById('ai-tooltip');
+    
     if (selectedTextForAI && selectedTextForAI.length > 0) {
         let range = selection.getRangeAt(0);
         let rect = range.getBoundingClientRect();
@@ -3620,32 +3601,40 @@ async function openAiModalAndAsk(question) {
     document.getElementById('ai-modal').style.display = 'flex';
     let chatBox = document.getElementById('ai-chat-box');
     let apiKey = localStorage.getItem('quan_gemini_key');
+    
     if (!apiKey) {
         apiKey = prompt("🤖 Nhập mã Gemini API Key của Quân:");
-        if (apiKey) localStorage.setItem('quan_gemini_key', apiKey.trim()); else return;
+        if (apiKey) localStorage.setItem('quan_gemini_key', apiKey.trim());
+        else return;
     }
-    
+
+    // Hiển thị câu hỏi của người dùng
     chatBox.innerHTML += `<div style="background: #009688; color: #fff; padding: 12px 16px; border-radius: 15px; align-self: flex-end; max-width: 85%; margin-bottom: 5px;">${question}</div>`;
+    
     let loadingId = "loading-" + Date.now();
-    chatBox.innerHTML += `<div id="${loadingId}" style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; margin-bottom: 5px;">Đang kết nối... ⏳</div>`;
+    chatBox.innerHTML += `<div id="${loadingId}" style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; margin-bottom: 5px; color: #333;">Đang suy nghĩ... ⏳</div>`;
     chatBox.scrollTop = chatBox.scrollHeight;
-    
+
     let directUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    let proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
     
+    // Đã đổi sang proxy mới ổn định hơn
+    let proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+
     try {
         let res;
         try {
-            // Thử gọi thẳng trước
+            // Thử gọi trực tiếp trước
             res = await fetch(directUrl, {
-                method: "POST", headers: { "Content-Type": "application/json" },
+                method: "POST", 
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: question }] }] })
             });
         } catch (e) {
-            // Nếu bị điện thoại chặn (Failed to fetch), tự động chuyển sang Proxy
-            document.getElementById(loadingId).innerHTML = `<div style="background: #fff3cd; padding: 10px; border-radius: 10px; font-size: 0.9rem;">Bị chặn! Đang đi đường vòng qua Proxy... 🔄</div>`;
+            // Chuyển sang proxy nếu bị chặn CORS
+            document.getElementById(loadingId).innerHTML = `<div style="background: #fff3cd; padding: 10px; border-radius: 10px; font-size: 0.9rem; color: #856404;">Đang lách luật bằng Proxy mới... 🔄</div>`;
             res = await fetch(proxyUrl, {
-                method: "POST", headers: { "Content-Type": "application/json" },
+                method: "POST", 
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: question }] }] })
             });
         }
@@ -3654,14 +3643,17 @@ async function openAiModalAndAsk(question) {
         if(data.error) throw new Error(data.error.message);
         
         let answer = data.candidates[0].content.parts[0].text;
-        document.getElementById(loadingId).innerHTML = `<div style="background: #fff; border: 1px solid #ddd; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 90%; line-height: 1.6; color:#333;">${answer.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>')}</div>`;
+        
+        // Format trả về
+        let formattedAnswer = answer.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+        
+        document.getElementById(loadingId).innerHTML = `<div style="background: #fff; border: 1px solid #ddd; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 90%; line-height: 1.6; color:#333;">${formattedAnswer}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
     } catch (err) {
-        document.getElementById(loadingId).innerHTML = `<div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 10px;">Lỗi: ${err.message}<br><small>Có vẻ mạng đang quá tải, Quân hãy thử lại trên máy tính nhé!</small></div>`;
+        document.getElementById(loadingId).innerHTML = `<div style="color: #d32f2f; background: #fde8e8; padding: 12px; border-radius: 15px; align-self: flex-start; font-size: 0.95rem;">❌ Lỗi: ${err.message}. <br><br>Vui lòng kiểm tra lại API Key hoặc đổi mạng Wifi/4G khác!</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
-    chatBox.scrollTop = chatBox.scrollHeight;
 }
 </script>
-
-	
 </body>
 </html>
