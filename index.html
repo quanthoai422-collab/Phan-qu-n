@@ -270,6 +270,99 @@ html body.dark-mode .mc-btn {
         grid-template-columns: repeat(2, 1fr) !important;
     }
 }
+/* =========================================
+   GIAO DIỆN HỎI ĐÁP AI CHATBOT (BẢN PRO)
+   ========================================= */
+#ai-chat-widget {
+    position: fixed; bottom: 20px; right: 20px;
+    width: 360px; background: #fff;
+    border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    z-index: 9999; overflow: hidden;
+    display: flex; flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.1);
+    transform: translateY(120%); opacity: 0; pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+#ai-chat-widget.open {
+    transform: translateY(0); opacity: 1; pointer-events: auto;
+}
+#ai-chat-header {
+    background: linear-gradient(135deg, var(--topik-blue, #0056b3), #007bff);
+    color: white; padding: 15px; font-weight: bold; 
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; font-size: 1.1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.chat-btn-action {
+    background: rgba(255,255,255,0.2); padding: 4px 10px; 
+    border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+}
+.chat-btn-action:hover { background: rgba(255,255,255,0.4); }
+#ai-chat-body { display: flex; flex-direction: column; height: 420px; }
+#ai-chat-messages {
+    flex: 1; padding: 15px; overflow-y: auto; background: #f4f7f6; 
+    display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;
+}
+/* Tùy chỉnh thanh cuộn (Scrollbar) */
+#ai-chat-messages::-webkit-scrollbar { width: 6px; }
+#ai-chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+.ai-msg, .user-msg {
+    max-width: 85%; padding: 12px 15px; border-radius: 15px;
+    font-size: 0.95rem; line-height: 1.5; word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); animation: fadeInMsg 0.3s ease-out;
+}
+@keyframes fadeInMsg { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.ai-msg { align-self: flex-start; background: #fff; color: #333; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+.user-msg { align-self: flex-end; background: var(--topik-blue, #0056b3); color: white; border-bottom-right-radius: 4px; }
+
+#ai-chat-input-area {
+    display: flex; padding: 12px; border-top: 1px solid #e2e8f0; background: #fff; gap: 8px;
+}
+#ai-input {
+    flex: 1; padding: 10px 15px; border: 1px solid #e2e8f0; background: #f8fafc;
+    border-radius: 25px; outline: none; font-size: 0.95rem; transition: 0.3s;
+}
+#ai-input:focus { border-color: #007bff; background: #fff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+#ai-chat-input-area button {
+    background: var(--topik-blue, #0056b3); color: white; border: none;
+    width: 42px; height: 42px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
+}
+#ai-chat-input-area button:hover { transform: scale(1.05); }
+
+/* Hiệu ứng gõ phím (Typing Indicator) */
+.typing-indicator { display: flex; gap: 4px; padding: 5px 2px; align-items: center; }
+.typing-indicator span { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: typingBlink 1.4s infinite; }
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBlink { 0%, 100% { opacity: 0.2; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+/* Nút gọi AI nổi bên ngoài */
+#ai-fab-btn {
+    position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+    background: linear-gradient(135deg, #0056b3, #007bff); border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(0,123,255,0.4); display: flex; justify-content: center;
+    align-items: center; font-size: 1.8rem; cursor: pointer; z-index: 9998;
+    transition: 0.3s; color: white;
+}
+#ai-fab-btn:hover { transform: scale(1.1); }
+#ai-fab-btn.hidden { display: none; }
+
+/* Dark Mode */
+body.dark-mode #ai-chat-widget { background: #1e1e1e; border-color: #333; }
+body.dark-mode #ai-chat-messages { background: #121212; }
+body.dark-mode .ai-msg { background: #2d2d2d; color: #e0e0e0; border-color: #444; }
+body.dark-mode #ai-chat-input-area { background: #1e1e1e; border-color: #333; }
+body.dark-mode #ai-input { background: #2d2d2d; color: #fff; border-color: #444; }
+body.dark-mode #ai-chat-header { background: linear-gradient(135deg, #2d2d2d, #444); }
+
+@media (max-width: 500px) {
+    #ai-chat-widget { bottom: 0; right: 0; width: 100%; border-radius: 20px 20px 0 0; height: 85vh; }
+    #ai-chat-body { height: calc(85vh - 60px); }
+}
+/* =======================================================
+
     </style>
 </head>
 <body>
@@ -277,13 +370,13 @@ html body.dark-mode .mc-btn {
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-item" onclick="toggleMenu(); alert('Học viên: Phan Văn Quân')">👤 Thông tin học viên</div>
-    <div class="sidebar-item" onclick="toggleMenu(); showTestPortal()">📝 làm đi emm</div>
+    <div class="sidebar-item" onclick="toggleMenu(); showTestPortal()">📝 đéo có mô mà làm</div>
     <div class="sidebar-item" onclick="toggleMenu(); location.reload()">🏠 Trang chủ</div>
 </div>
 
 <div class="container">
     <div class="menu-dots" onclick="toggleMenu()">&#8942;</div>
-    <div class="header-stats"><h1 class="title">Tiếng Hàn Sơ Cấp 1 - Phan Văn Quân</h1></div>
+    <div class="header-stats"><h1 class="title">Tiếng Hàn Sơ Cấp 1 </h1></div>
     <input type="text" id="searchInput" class="search-box" placeholder="Tìm kiếm..." onkeyup="filterCards()">
 
     <div class="filter-row" id="category-buttons">
@@ -298,7 +391,9 @@ html body.dark-mode .mc-btn {
 <button class="filter-btn" style="color:#009688" onclick="setCategory('translate', this)">Luyện dịch ✍️</button>
 <!-- Dán dòng này vào trước nút Luyện Gõ -->
 <button class="filter-btn" style="color:#e91e63; font-weight: bold; border-color: #e91e63;" onclick="setCategory('listening', this)">Luyện nghe 🎧</button>
-        <button class="filter-btn" id="quiz-btn" style="margin-left:auto" onclick="toggleQuizMode(this)">Luyện Gõ ⌨️</button>
+      <button class="filter-btn" id="quiz-btn" style="margin-left:auto" onclick="toggleQuizMode(this)">Luyện Gõ ⌨️</button>
+	  <button class="filter-btn" id="listen-btn" style="background:#27ae60; color:white; border-color:#2ecc71; font-weight:bold; margin-left:5px;" onclick="toggleListeningMode(this)">Luyện Nghe 🎧</button>
+<button class="filter-btn" id="reverse-btn" style="background:#9b59b6; color:white; border-color:#8e44ad; font-weight:bold; margin-left:5px;" onclick="toggleReverseMode(this)">🔄 Đảo sang Tiếng Việt</button>
     </div>
 
  <div class="menu-2-hang">
@@ -321,13 +416,13 @@ html body.dark-mode .mc-btn {
         <button class="filter-btn" onclick="setLesson('Bài 15', this)">Bài 15</button>
     </div>
 <div id="quiz-container" style="display: none; background: #fff; padding: 25px; border-radius: 12px; border: 2px solid #009688; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-        <h3 style="color: #009688; margin-top: 0;">⌨️ CHẾ ĐỘ LUYỆN GÕ</h3>
+       
         <div id="quiz-question" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; color: #333;"></div>
-        <input type="text" id="quiz-input" placeholder="Gõ tiếng Hàn vào đây và ấn Enter..." style="width: 100%; padding: 12px; font-size: 1.2rem; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 15px; outline: none;">
+       
         <div id="quiz-result" style="margin-bottom: 15px; font-size: 1.1rem; min-height: 25px;"></div>
         <div>
-            <button onclick="checkAnswer()" style="background: #28a745; color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-right: 10px; font-size: 1rem;">Kiểm tra</button>
-            <button onclick="nextFlashcard()" style="background: var(--topik-blue); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem;">Câu tiếp theo</button>
+            
+           
         </div>
     </div>
 <div style="background: #ffffff; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 20px 0; border: 1px solid #eee; text-align: center;">
@@ -337,8 +432,7 @@ html body.dark-mode .mc-btn {
     </div>
 
     <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ddd;">
-        <div id="hp-display" style="color: #ff4757; font-size: 1.4rem; letter-spacing: 3px;">❤️❤️❤️❤️❤️</div>
-        <button id="god-mode-btn" data-god="false" onclick="toggleGodMode()" style="background: #f8f9fa; border: 1px solid #ddd; font-size: 1.5rem; cursor: pointer; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" title="Bật/Tắt Bất Tử">🛡️</button>
+
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -367,6 +461,51 @@ html body.dark-mode .mc-btn {
 </div>
 
 <script>
+function flipNormalCard(element, event) {
+    // Nếu bấm trúng nút ngôi sao hoặc cái loa nhỏ thì không lật thẻ để tránh lỗi cuộn âm thanh
+    if (event.target.classList.contains('star-btn') || event.target.closest('.speaker-btn')) {
+        return;
+    }
+    
+    let front = element.querySelector('.front-face');
+    let back = element.querySelector('.back-face');
+    
+    if (front && back) {
+        if (front.style.display === 'block' || front.style.display === '') {
+            front.style.display = 'none';
+            back.style.display = 'block';
+        } else {
+            front.style.display = 'block';
+            back.style.display = 'none';
+        }
+    }
+}
+var isListening = false;
+
+function toggleListeningMode(btn) {
+    isListening = !isListening;
+    
+    if(isListening) {
+        // Tắt chế độ Luyện Gõ nếu đang bật để tránh xung đột
+        if(typeof isQuiz !== 'undefined') isQuiz = false; 
+        let quizBtn = document.getElementById('quiz-btn');
+        if(quizBtn) {
+            quizBtn.innerText = "Luyện Gõ ⌨️";
+            quizBtn.style.backgroundColor = ""; // Trả về màu gốc
+        }
+        
+        btn.innerText = "🎧 Đang Luyện Nghe";
+        btn.style.backgroundColor = "#d35400"; // Hiện màu cam báo hiệu đang bật
+        btn.style.borderColor = "#e67e22";
+    } else {
+        btn.innerText = "Luyện Nghe 🎧";
+        btn.style.backgroundColor = "#27ae60"; // Trả về xanh lá
+        btn.style.borderColor = "#2ecc71";
+    }
+    
+    // Cập nhật lại toàn bộ thẻ bài ngay lập tức
+    if(typeof filterCards === 'function') filterCards();
+}
 // Tính năng Ban Đêm
 let isDarkMode = false;
 function toggleDarkMode() {
@@ -2961,7 +3100,24 @@ function toggleDarkMode() {
     var currentCat = 'All';
     var currentLes = 'All';
     var isQuiz = false; // Biến bật/tắt Luyện Gõ
+var currentCat = 'All'; var currentLes = 'All'; var isQuiz = false;
+var isReverse = false; // Thêm biến cờ hiệu này
 
+// Dán hàm này vào bất kỳ vị trí trống nào bên trong thẻ <script>
+function toggleReverseMode(btn) {
+    isReverse = !isReverse;
+    if(isReverse) {
+        btn.innerText = "🔄 Mặt trước: Tiếng Hàn";
+        btn.style.backgroundColor = "#e74c3c";
+        btn.style.borderColor = "#c0392b";
+    } else {
+        btn.innerText = "🔄 Đảo sang Tiếng Việt";
+        btn.style.backgroundColor = "#9b59b6";
+        btn.style.borderColor = "#8e44ad";
+    }
+    // Gọi hàm này để cập nhật lại giao diện ngay lập tức cho cả thẻ thường
+    if(typeof filterCards === 'function') filterCards();
+}
     // ==========================================
     // 2. LOGIC LỌC BÀI & MENU
     // ==========================================
@@ -3079,15 +3235,7 @@ function toggleDarkMode() {
             }
         }
         
-        if (typeof isGodMode !== 'undefined' && !isGodMode) {
-            currentHp -= 1;
-            updateGameUI();
-            if (currentHp <= 0) {
-                // ĐÃ XÓA THÔNG BÁO GAME OVER TẠI ĐÂY
-                resetGame();
-                filterCards();
-            }
-        }
+        
         
         allBtns.forEach(b => {
             if (b.getAttribute('data-correct') === 'true') {
@@ -3098,7 +3246,16 @@ function toggleDarkMode() {
     }
 }
 
-    function renderCards(cards) {
+    function renderCards(cards) {// BỘ LỌC TỰ ĐỘNG XÓA ICON TRƯỚC KHI IN RA MÀN HÌNH
+    cards.forEach(card => {
+        const clean = (str) => {
+            if (!str) return "";
+            // Chỉ giữ lại chữ Tiếng Việt, Tiếng Hàn, Tiếng Anh, Số và Dấu câu cơ bản
+            return str.replace(/[^a-z0-9áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđㄱ-ㅎㅏ-ㅣ가-힣\s,.\-()/]/gi, '').replace(/\s+/g, ' ').trim();
+        };
+        if(card.kr) card.kr = clean(card.kr);
+        if(card.vn) card.vn = clean(card.vn);
+    });
         const container = document.getElementById('card-container');
         if (!container) return;
         container.innerHTML = '';
@@ -3129,58 +3286,86 @@ function toggleDarkMode() {
                     </div>
                     <button onclick="this.previousElementSibling.style.display = 'block'; this.style.display = 'none'; event.stopPropagation();" style="margin-top:10px; background:#f1f3f4; border:1px solid #ccc; padding:6px 15px; border-radius:15px; cursor:pointer; font-size:0.9rem; font-weight:bold; color:#555;"> 👀 Đáp án </button>
                 `;
-            } else if (isQuiz) {
-                if (isMultipleChoice) {
-                    let options = [card.kr];
-                    let loopCount = 0;
-                    while(options.length < 4 && loopCount < 50) {
-                        let randomCard = data[Math.floor(Math.random() * data.length)];
-                        if (!options.includes(randomCard.kr) && randomCard.kr) {
-                            options.push(randomCard.kr);
-                        }
-                        loopCount++;
-                    }
-                    options.sort(() => Math.random() - 0.5); 
-                    
-                    let buttonsHTML = options.map(opt => {
-                        let isCorrect = (opt === card.kr);
-                        let safeOpt = opt.replace(/'/g, "\\'");
-                        return `<button class="mc-btn" data-correct="${isCorrect}" onclick="checkMCAnswer(this, ${isCorrect}, '${safeKr}')" style="display:block; width:100%; margin:8px 0; padding:12px; border-radius:8px; border:2px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:1.1rem; font-weight:bold; cursor:pointer; transition:0.2s;">${opt}</button>`;
-                    }).join('');
+     } else if (isListening) {
+            // CHẾ ĐỘ LUYỆN NGHE: Ẩn chữ Hàn, hiện Loa bự, yêu cầu gõ Tiếng Việt
+            let answerText = card.vn; // Đáp án để chấm điểm là Tiếng Việt
+            let safeAnswer = (answerText || '').replace(/'/g, "\\'");
+            let krText = card.kr; 
+            let safeKr = (krText || '').replace(/'/g, "\\'");
 
-                    div.innerHTML = starHTML + `
-                        <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
-                        <div class="mc-container" style="margin-top:15px;">
-                            ${buttonsHTML}
-                        </div>
-                        <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                            <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
-                        </div>
-                    `;
-                } else {
-                    div.innerHTML = starHTML + `
-                        <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${card.vn || ''} ${speakerHTML} ${micHTML}</div>
-                        <input type="text" class="quiz-input" placeholder="Gõ..." onkeyup="checkInlineAnswer(this, event, '${safeKr}')">
-                        <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                            <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
-                        </div>
-                    `;
+            div.innerHTML = starHTML + `
+                <div style="text-align:center; margin-bottom: 15px;">
+                    <button onclick="speakKorean('${safeKr}', null)" style="background:#3498db; color:white; border:none; border-radius:50%; width:65px; height:65px; font-size:2rem; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2); transition:0.2s;">🔊</button>
+                    <div style="font-size:0.95rem; color:#7f8c8d; margin-top:10px; font-weight:bold;">Nhấn loa để nghe</div>
+                </div>
+                <input type="text" class="quiz-input" placeholder="Nghe và gõ nghĩa Tiếng Việt..." onkeyup="checkInlineAnswer(this, event, '${safeAnswer}')">
+                <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
+                    <span style="font-size:1.4rem; color:#27ae60; font-weight:bold;">Đáp án: ${answerText}</span>
+                    <div style="font-size:1.1rem; color:#d35400; margin-top:5px;">(Từ gốc: ${krText})</div>
+                </div>
+            `;
+        } else if (isQuiz) {
+            // Xác định câu hỏi và câu trả lời dựa vào chế độ Đảo ngôn ngữ
+            let questionText = isReverse ? card.kr : card.vn;
+            let answerText = isReverse ? card.vn : card.kr;
+            let safeAnswer = (answerText || '').replace(/'/g, "\\'");
+
+            if (typeof isMultipleChoice !== 'undefined' && isMultipleChoice) {
+                let options = [answerText];
+                let loopCount = 0;
+                while(options.length < 4 && loopCount < 50) {
+                    let randomCard = data[Math.floor(Math.random() * data.length)];
+                    let randomOpt = isReverse ? randomCard.vn : randomCard.kr;
+                    if (!options.includes(randomOpt) && randomOpt) {
+                        options.push(randomOpt);
+                    }
+                    loopCount++;
                 }
-            } else {
-                div.onclick = function() {
-                    const res = this.querySelector('.kr-result-container');
-                    if (res) res.style.display = (res.style.display === 'block' ? 'none' : 'block');
-                };
+                options.sort(() => Math.random() - 0.5);
+                let buttonsHTML = options.map(opt => {
+                    let isCorrect = (opt === answerText);
+                    let safeOpt = opt.replace(/'/g, "\\'");
+                    return `<button class="mc-btn" data-correct="${isCorrect}" onclick="checkMCAnswer(this, ${isCorrect}, '${safeAnswer}')" style="display:block; width:100%; margin:8px 0; padding:12px; border-radius:8px; border:2px solid var(--border); background:var(--card-bg); color:var(--text-main); font-size:1.1rem; font-weight:bold; cursor:pointer; transition:0.2s;">${opt}</button>`;
+                }).join('');
+                
                 div.innerHTML = starHTML + `
-                    ${imageHTML}
-                    <div class="vn-text" style="font-weight: 600;">${card.vn || ''}</div>
+                    <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${questionText || ''} ${speakerHTML} ${micHTML}</div>
+                    <div class="mc-container" style="margin-top:15px;">
+                        ${buttonsHTML}
+                    </div>
                     <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
-                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${card.kr}</span>
-                        ${speakerHTML} ${micHTML}
-                        <div style="font-size:0.85rem; color:#888; margin-top:5px;">${card.note || ''}</div>
+                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${answerText}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = starHTML + `
+                    <div class="vn-text" style="margin-bottom: 10px; font-weight: 600;">${questionText || ''} ${speakerHTML} ${micHTML}</div>
+                    <input type="text" class="quiz-input" placeholder="${isReverse ? 'Gõ tiếng Việt...' : 'Gõ tiếng Hàn...'}" onkeyup="checkInlineAnswer(this, event, '${safeAnswer}')">
+                    <div class="kr-result-container" style="display:none; text-align:center; margin-top:10px;">
+                        <span style="font-size:1.6rem; color:#d35400; font-weight:bold;">${answerText}</span>
                     </div>
                 `;
             }
+     } else {
+            // CHẾ ĐỘ XEM THẺ BÌNH THƯỜNG (HỖ TRỢ ĐẢO NGÔN NGỮ ĐA CHIỀU)
+            let frontText = isReverse ? card.kr : card.vn;
+            let backText = isReverse ? card.vn : card.kr;
+            
+            // Loa phát âm sẽ tự động đi kèm theo chữ Tiếng Hàn tương ứng
+            let frontSpeaker = isReverse ? speakerHTML : '';
+            let backSpeaker = isReverse ? '' : speakerHTML;
+
+            div.innerHTML = starHTML + `
+                <div class="card-flip-wrapper" onclick="flipNormalCard(this, event)" style="cursor:pointer; width:100%; height:100%; min-height:100px; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                    <div class="front-face" style="display:block; font-size:1.5rem; font-weight:bold; color:var(--text-main); text-align:center; width:100%;">
+                        ${frontText || ''} ${frontSpeaker}
+                    </div>
+                    <div class="back-face" style="display:none; font-size:1.5rem; font-weight:bold; color:#d35400; text-align:center; width:100%;">
+                        ${backText || ''} ${backSpeaker}
+                    </div>
+                </div>
+            `;
+        }
             container.appendChild(div);
         });
     }
@@ -3228,7 +3413,23 @@ function toggleDarkMode() {
         let krText = inputElement.parentElement.querySelector('.kr-result-container');
         
         inputElement.classList.remove('quiz-correct', 'quiz-wrong');
+        if (event && (event.key === 'Enter' || event.keyCode === 13 || event.code === 'Enter')) {
+        // Lấy danh sách tất cả các ô nhập liệu đang hiển thị
+        let allInputs = Array.from(document.querySelectorAll('.quiz-input'));
+        let currentIndex = allInputs.indexOf(inputElement);
         
+        // Nếu tìm thấy và chưa phải là ô cuối cùng
+        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) {
+            let nextInput = allInputs[currentIndex + 1];
+            nextInput.focus(); // Đưa con trỏ nhấp nháy xuống ô tiếp theo
+            
+            // Cuộn trang mượt mà để ô tiếp theo nằm giữa màn hình (cực kì tiện cho điện thoại)
+            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (currentIndex === allInputs.length - 1) {
+            // Nếu là câu cuối cùng thì cất bàn phím
+            inputElement.blur();
+        }
+    }
         if (userVal === '') {
             if(krText) krText.style.display = 'none';
             return;
@@ -3425,34 +3626,30 @@ function toggleShowAnswer() {
         btn.style.backgroundColor = "#e74c3c"; // Đổi về màu Đỏ
     }
 }
-function toggleGodMode() {
-        let btn = document.getElementById('god-mode-btn');
-        if (!btn) return;
-        
-        // Kiểm tra xem khoá đang bật hay tắt
-        let currentState = btn.getAttribute('data-god');
-        
-        if (currentState === 'false') {
-            btn.setAttribute('data-god', 'true'); // Chốt khoá Bật
-            isGodMode = true; /* THÊM DÒNG NÀY ĐỂ BẬT BẤT TỬ */
-            btn.style.textShadow = "0 0 15px #f1c40f"; 
-            btn.innerText = "🌟"; 
-            alert("🛡️ Đã bật chế độ BẤT TỬ! Tha hồ gõ sai không lo mất máu!");
-        } else {
-            btn.setAttribute('data-god', 'false'); // Chốt khoá Tắt
-            isGodMode = false; /* THÊM DÒNG NÀY ĐỂ TẮT BẤT TỬ */
-            btn.style.textShadow = "none";
-            btn.innerText = "🛡️"; 
-            alert("Đã tắt chế độ Bất tử. Trở lại sinh tồn khắc nghiệt!");
-        }
-    }
+
   function checkInlineAnswer(inputElement, event, correctAnswer) {
         let userVal = inputElement.value.trim().toLowerCase().replace(/[\s.,?!~()]/g, '');
         let correctVal = correctAnswer.trim().toLowerCase().replace(/[\s.,?!~()]/g, '');
         let krText = inputElement.parentElement.querySelector('.kr-result-container');
         
         inputElement.classList.remove('quiz-correct', 'quiz-wrong');
+        if (event && (event.key === 'Enter' || event.keyCode === 13 || event.code === 'Enter')) {
+        // Lấy danh sách tất cả các ô nhập liệu đang hiển thị
+        let allInputs = Array.from(document.querySelectorAll('.quiz-input'));
+        let currentIndex = allInputs.indexOf(inputElement);
         
+        // Nếu tìm thấy và chưa phải là ô cuối cùng
+        if (currentIndex !== -1 && currentIndex < allInputs.length - 1) {
+            let nextInput = allInputs[currentIndex + 1];
+            nextInput.focus(); // Đưa con trỏ nhấp nháy xuống ô tiếp theo
+            
+            // Cuộn trang mượt mà để ô tiếp theo nằm giữa màn hình (cực kì tiện cho điện thoại)
+            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (currentIndex === allInputs.length - 1) {
+            // Nếu là câu cuối cùng thì cất bàn phím
+            inputElement.blur();
+        }
+    }
         if (userVal === '') {
             if(krText) krText.style.display = 'none';
             return;
@@ -3487,27 +3684,7 @@ function toggleGodMode() {
                 }
             }
 
-            // ==========================================
-            // XỬ LÝ TRỪ MÁU KẾT HỢP BẤT TỬ
-            // ==========================================
-            if (!inputElement.hasAttribute('data-passed') && !inputElement.hasAttribute('data-wrong-once')) {
-                inputElement.setAttribute('data-wrong-once', 'true'); // Đánh dấu đã sai 1 lần 
-                
-                if (!isGodMode) { // NẾU KHÔNG BẬT KHIÊN THÌ MỚI TRỪ MÁU
-                    currentHp -= 1;
-                    updateGameUI();
-                    
-                    if (currentHp <= 0) {
-                        // Rung màn hình nhẹ khi chết
-                        document.body.style.animation = "shake 0.5s";
-                        setTimeout(() => document.body.style.animation = "", 500);
-                        
-                        alert("💀 GAME OVER!\nBạn đã hết máu. Bấm OK để chơi lại từ đầu nhé!");
-                        resetGame();
-                        filterCards(); // Tải lại bài học
-                    }
-                }
-            }
+       
         }
     }
     function updateGameUI() {
@@ -3517,16 +3694,12 @@ function toggleGodMode() {
         for(let i = currentHp; i < maxHp; i++) hpString += "🖤"; // Máu đã mất
         document.getElementById('hp-display').innerText = hpString;
         
-        // Cập nhật Cấp & EXP
-        let expNeeded = level * 50;
-        document.getElementById('level-display').innerText = level;
-        document.getElementById('exp-display').innerText = exp;
-        document.getElementById('exp-need').innerText = expNeeded;
+
     }
 
     function resetGame() {
         currentHp = maxHp;
-        exp = 0;
+        exp = 10;
         level = 1;
         updateGameUI();
     }
@@ -3542,118 +3715,135 @@ function toggleGodMode() {
             }
         }
     });
+	// =========================================
+// =========================================
+// HỆ THỐNG HỎI ĐÁP AI PRO (TỐI ƯU GIAO DIỆN & PHÂN TÍCH)
+// =========================================
+function toggleAIChat() {
+    const widget = document.getElementById("ai-chat-widget");
+    const fab = document.getElementById("ai-fab-btn");
+    widget.classList.toggle("open");
+    if (widget.classList.contains("open")) {
+        fab.classList.add("hidden");
+        setTimeout(() => document.getElementById("ai-input").focus(), 300);
+    } else {
+        fab.classList.remove("hidden");
+    }
+}
+
+function clearChat() {
+    document.getElementById("ai-chat-messages").innerHTML = `<div class="ai-msg">Đã làm mới cuộc trò chuyện. Bạn cần phân tích câu nào tiếp theo? 👇</div>`;
+}
+
+function handleAIEnter(event) {
+    if (event.key === "Enter") {
+        event.preventDefault(); // Tránh lỗi load lại trang trên mobile
+        sendAIMessage();
+    }
+}
+
+async function sendAIMessage() {
+    const input = document.getElementById("ai-input");
+    const message = input.value.trim();
+    if (!message) return;
+
+    appendMessage(message, "user-msg");
+    input.value = ""; 
+
+    // Hiệu ứng "Đang gõ phím..." xịn xò
+    const typingHtml = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+    const typingId = appendMessage(typingHtml, "ai-msg");
+
+    try {
+        // Lệnh nhốt AI vào khuôn mẫu "Bổ luống" chi tiết nhất
+        const systemPrompt = `Bạn là Gia sư Tiếng Hàn cao cấp. Hãy phân tích câu tiếng Hàn sau một cách thật chi tiết.
+        BẮT BUỘC tuân thủ chặt chẽ cấu trúc sau (không tự ý thêm bớt):
+        
+        🎯 [Câu gốc]: <Viết lại câu>
+        
+        🧩 [Phân tích]:
+        - Từ vựng 1 (nghĩa)
+        - Trợ từ / Ngữ pháp (giải thích chức năng)
+        - Cụm động từ -> Cách chia
+        (Phân tích toàn bộ các thành phần trong câu theo từng gạch đầu dòng)
+        
+        💡 [Dịch nghĩa]: <Câu dịch tiếng Việt mượt mà>
+        
+        Câu cần phân tích là: `;
+        
+        const finalPrompt = systemPrompt + message;
+        const response = await fetch("https://text.pollinations.ai/" + encodeURIComponent(finalPrompt));
+
+        if (!response.ok) throw new Error("Server AI bận");
+
+        const aiResponse = await response.text();
+        updateMessage(typingId, formatAIResponse(aiResponse));
+
+    } catch (error) {
+        updateMessage(typingId, "⚠️ <i>Hệ thống AI đang quá tải nhẹ, bạn đợi 3 giây rồi gửi lại giúp mình nhé!</i>");
+    }
+}
+
+function appendMessage(text, className) {
+    const msgContainer = document.getElementById("ai-chat-messages");
+    const msgDiv = document.createElement("div");
+    msgDiv.className = className;
+    msgDiv.innerHTML = text; 
+    
+    const id = "msg-" + Date.now(); 
+    msgDiv.id = id;
+    
+    msgContainer.appendChild(msgDiv);
+    msgContainer.scrollTop = msgContainer.scrollHeight; 
+    return id;
+}
+
+function updateMessage(id, text) {
+    const msgDiv = document.getElementById(id);
+    if (msgDiv) {
+        msgDiv.innerHTML = text;
+        const msgContainer = document.getElementById("ai-chat-messages");
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+}
+
+function formatAIResponse(text) {
+    // Thuật toán định dạng văn bản: bôi đậm, xuống dòng, nhận diện gạch đầu dòng
+    let formatted = text
+        .replace(/\n/g, '<br>') // Xuống dòng
+        .replace(/\*\*(.*?)\*\*/g, '<b style="color:var(--topik-blue, #0056b3);">$1</b>') // Bôi đậm có màu xanh
+        .replace(/🎯/g, '<br>🎯 <b style="font-size:1.05em;">')
+        .replace(/🧩/g, '<br><hr style="border-top:1px dashed #ccc; margin:10px 0;">🧩 <b style="font-size:1.05em;">')
+        .replace(/💡/g, '<br><hr style="border-top:1px dashed #ccc; margin:10px 0;">💡 <b style="font-size:1.05em;">')
+        .replace(/\[Câu gốc\]:|\[Phân tích\]:|\[Dịch nghĩa\]:/g, match => match + '</b>')
+        .replace(/- (.*?)(?=<br>|$)/g, '<li style="margin-left: 10px;">$1</li>'); // Chuyển dấu gạch ngang thành list chấm bi
+
+    // Dọn dẹp các thẻ list bị thừa
+    formatted = formatted.replace(/(<br>)*<li/g, '<li');
+    return formatted;
+}
 </script>
-<div onclick="document.getElementById('ai-modal').style.display='flex'" oncontextmenu="localStorage.removeItem('quan_gemini_key'); alert('Đã xóa Key cũ! Hãy gõ câu hỏi để nhập Key mới.'); return false;" style="position: fixed; bottom: 20px; right: 20px; background: #8e44ad; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); cursor: pointer; z-index: 9998; border: 2px solid white;">🤖</div>
+<div id="translate-tooltip" onclick="openTranslate()">Dịch 🌐</div>
 
-<div id="ai-tooltip" onclick="askHighlightedText()" style="display: none; position: absolute; background: #8e44ad; color: #fff; padding: 10px 18px; border-radius: 25px; font-size: 14px; font-weight: bold; z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #fff; cursor: pointer;">Hỏi AI 🤖</div>
+<<div id="ai-fab-btn" onclick="toggleAIChat()">🤖</div>
 
-<div id="ai-modal" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; top: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: flex-end; justify-content: center;">
-    <div style="background: #fff; width: 100%; max-width: 600px; height: 80vh; border-top-left-radius: 25px; border-top-right-radius: 25px; display: flex; flex-direction: column; overflow: hidden; font-family: sans-serif;">
-        <div style="padding: 15px 20px; background: #8e44ad; color: #fff; display: flex; justify-content: space-between; align-items: center;">
-            <strong style="font-size: 1.2rem; margin:0;">🤖 Gia Sư Gemini</strong>
-            <span onclick="document.getElementById('ai-modal').style.display='none'" style="font-size: 2.2rem; cursor: pointer; line-height: 1;">&times;</span>
+<div id="ai-chat-widget">
+    <div id="ai-chat-header">
+        <span onclick="toggleAIChat()" style="flex:1;">✨ Gia sư AI Tiếng Hàn</span>
+        <span class="chat-btn-action" onclick="clearChat()">🧹 Xóa mới</span>
+        <span class="chat-btn-action" onclick="toggleAIChat()" style="margin-left:8px;">❌ Đóng</span>
+    </div>
+    <div id="ai-chat-body">
+        <div id="ai-chat-messages">
+            <div class="ai-msg">Chào bạn! Nhập một câu tiếng Hàn bất kỳ, mình sẽ "bổ luống" và phân tích cấu trúc cực kỳ chi tiết cho bạn nhé! ✨</div>
         </div>
-        <div id="ai-chat-box" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 15px;">
-            <div style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 85%; color: #333; line-height: 1.5;">Chào Quân! Cần hỏi gì cứ gõ vào đây hoặc bôi đen chữ trên web nhé!</div>
-        </div>
-        <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: #fff; padding-bottom: 25px;">
-            <input type="text" id="ai-input" placeholder="Gõ câu hỏi..." style="flex: 1; border: 1px solid #ddd; padding: 12px 20px; border-radius: 30px; outline: none; font-size: 16px;" onkeypress="if(event.key === 'Enter') sendCustomQuestion()">
-            <button onclick="sendCustomQuestion()" style="background: #8e44ad; color: #fff; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">🚀</button>
+        <div id="ai-chat-input-area">
+            <input type="text" id="ai-input" placeholder="Nhập câu tiếng Hàn..." onkeypress="handleAIEnter(event)" autocomplete="off">
+            <button onclick="sendAIMessage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 </div>
-
-<script>
-// Logic bôi đen văn bản hiện nút Hỏi AI
-let selectedTextForAI = "";
-document.addEventListener('mouseup', (e) => {
-    let selection = window.getSelection();
-    selectedTextForAI = selection.toString().trim();
-    let tooltip = document.getElementById('ai-tooltip');
-    
-    if (selectedTextForAI && selectedTextForAI.length > 0) {
-        let range = selection.getRangeAt(0);
-        let rect = range.getBoundingClientRect();
-        if(tooltip) {
-            tooltip.style.display = 'block';
-            tooltip.style.left = (rect.left + window.scrollX) + 'px';
-            tooltip.style.top = (rect.top + window.scrollY - 55) + 'px';
-        }
-    } else if (e.target.id !== 'ai-tooltip') {
-        if(tooltip) tooltip.style.display = 'none';
-    }
-});
-
-function askHighlightedText() {
-    if (!selectedTextForAI) return;
-    document.getElementById('ai-tooltip').style.display = 'none';
-    openAiModalAndAsk(`Giải thích chi tiết đoạn tiếng Hàn này giúp tôi: "${selectedTextForAI}"`);
-}
-
-function sendCustomQuestion() {
-    let input = document.getElementById('ai-input');
-    if (!input || !input.value.trim()) return;
-    openAiModalAndAsk(input.value.trim());
-    input.value = "";
-}
-
-async function openAiModalAndAsk(question) {
-    document.getElementById('ai-modal').style.display = 'flex';
-    let chatBox = document.getElementById('ai-chat-box');
-    let apiKey = localStorage.getItem('quan_gemini_key');
-    
-    if (!apiKey) {
-        apiKey = prompt("🤖 Nhập mã Gemini API Key của Quân:");
-        if (apiKey) localStorage.setItem('quan_gemini_key', apiKey.trim());
-        else return;
-    }
-
-    // Hiển thị câu hỏi của người dùng
-    chatBox.innerHTML += `<div style="background: #009688; color: #fff; padding: 12px 16px; border-radius: 15px; align-self: flex-end; max-width: 85%; margin-bottom: 5px;">${question}</div>`;
-    
-    let loadingId = "loading-" + Date.now();
-    chatBox.innerHTML += `<div id="${loadingId}" style="background: #e9ecef; padding: 12px 16px; border-radius: 15px; align-self: flex-start; margin-bottom: 5px; color: #333;">Đang suy nghĩ... ⏳</div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    let directUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
-    // Đã đổi sang proxy mới ổn định hơn
-    let proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
-
-    try {
-        let res;
-        try {
-            // Thử gọi trực tiếp trước
-            res = await fetch(directUrl, {
-                method: "POST", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: question }] }] })
-            });
-        } catch (e) {
-            // Chuyển sang proxy nếu bị chặn CORS
-            document.getElementById(loadingId).innerHTML = `<div style="background: #fff3cd; padding: 10px; border-radius: 10px; font-size: 0.9rem; color: #856404;">Đang lách luật bằng Proxy mới... 🔄</div>`;
-            res = await fetch(proxyUrl, {
-                method: "POST", 
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts: [{ text: question }] }] })
-            });
-        }
-
-        const data = await res.json();
-        if(data.error) throw new Error(data.error.message);
-        
-        let answer = data.candidates[0].content.parts[0].text;
-        
-        // Format trả về
-        let formattedAnswer = answer.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-        
-        document.getElementById(loadingId).innerHTML = `<div style="background: #fff; border: 1px solid #ddd; padding: 12px 16px; border-radius: 15px; align-self: flex-start; max-width: 90%; line-height: 1.6; color:#333;">${formattedAnswer}</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } catch (err) {
-        document.getElementById(loadingId).innerHTML = `<div style="color: #d32f2f; background: #fde8e8; padding: 12px; border-radius: 15px; align-self: flex-start; font-size: 0.95rem;">❌ Lỗi: ${err.message}. <br><br>Vui lòng kiểm tra lại API Key hoặc đổi mạng Wifi/4G khác!</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
-}
-</script>
 </body>
 </html>
