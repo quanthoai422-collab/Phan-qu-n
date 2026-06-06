@@ -5,6 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>App Tiếng Hàn - Phan Văn Quân</title>
     <style>
+	/* --- CSS CHO CHẾ ĐỘ THI NGHE --- */
+.audio-player-card {
+    background: #f8f9fa;
+    border-left: 5px solid #e74c3c;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.listening-q-box {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.listening-q-title {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+.listening-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+@media (min-width: 600px) {
+    .listening-options { grid-template-columns: 1fr 1fr; }
+}
+.listening-opt-label {
+    display: flex;
+    align-items: center;
+    background: #fdfdfd;
+    border: 1px solid #dcdde1;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+.listening-opt-label:hover {
+    background: #f5f6fa;
+    border-color: #3498db;
+}
+.listening-opt-label input {
+    margin-right: 10px;
+    transform: scale(1.1);
+}
+/* Trạng thái hiển thị đáp án sau khi nộp */
+.opt-correct {
+    background: #d4edda !important;
+    border-color: #28a745 !important;
+    color: #155724 !important;
+    font-weight: bold;
+}
+.opt-wrong {
+    background: #f8d7da !important;
+    border-color: #dc3545 !important;
+    color: #721c24 !important;
+}
 	/* --- CSS CHO NGÔI SAO VÀ LOA --- */
 .flashcard { position: relative; min-height: 140px; padding-top: 30px !important; }
 
@@ -370,8 +434,8 @@ body.dark-mode #ai-chat-header { background: linear-gradient(135deg, #2d2d2d, #4
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 <div class="sidebar" id="sidebar">
     <div class="sidebar-item" onclick="toggleMenu(); alert('Học viên: Phan Văn Quân')">👤 Thông tin học viên</div>
-    <div class="sidebar-item" onclick="toggleMenu(); showTestPortal()">📝 đéo có mô mà làm</div>
-    <div class="sidebar-item" onclick="toggleMenu(); location.reload()">🏠 Trang chủ</div>
+    <div class="sidebar-item" onclick="toggleMenu(); switchMode('listening-test')">🎧 Phòng Thi Nghe TOPIK I</div>
+    <div class="sidebar-item" onclick="toggleMenu(); switchMode('practice')">🏠 Luyện tập từ vựng</div>
 </div>
 
 <div class="container">
@@ -415,6 +479,8 @@ body.dark-mode #ai-chat-header { background: linear-gradient(135deg, #2d2d2d, #4
         <button class="filter-btn" onclick="setLesson('Bài 14', this)">Bài 14</button>
         <button class="filter-btn" onclick="setLesson('Bài 15', this)">Bài 15</button>
     </div>
+	<button class="filter-btn" onclick="setLesson('Mở rộng', this)" style="color:#1a73e8; font-weight:bold;">Mở rộng 🚀</button>
+ </div>
 <div id="quiz-container" style="display: none; background: #fff; padding: 25px; border-radius: 12px; border: 2px solid #009688; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
        
         <div id="quiz-question" style="font-size: 1.4rem; font-weight: bold; margin-bottom: 15px; color: #333;"></div>
@@ -458,9 +524,292 @@ body.dark-mode #ai-chat-header { background: linear-gradient(135deg, #2d2d2d, #4
         <button onclick="submitTest()" style="background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:5px">NỘP BÀI</button>
         <button onclick="nextQuestion()">Câu tiếp</button>
     </div>
+<div id="listening-test-section" class="container" style="display: none; max-width: 800px; margin: 20px auto; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: #2c3e50; margin-bottom: 5px;">제35회 한국어능력시험 I (듣기)</h2>
+        <p style="color: #3498db; font-weight: bold; font-size: 1rem;">🎯 Click câu nào - Tự động nhảy nghe câu đó</p>
+    </div>
+
+    <div style="background: #edf2f7; border: 2px dashed #3498db; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #2c3e50;">📥 BƯỚC 1: Chọn file "Topik I_35.mp3" từ thiết bị của bạn</p>
+        <input type="file" id="audio-file-picker" accept="audio/*" onchange="loadAudioFile(this)" style="font-size: 1rem; padding: 5px; cursor: pointer;">
+    </div>
+
+    <div id="master-audio-box" style="display: none; position: sticky; top: 10px; z-index: 100; background: #fff; border: 2px solid #2ecc71; padding: 12px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <p style="margin: 0 0 8px 0; font-weight: bold; color: #27ae60; font-size: 0.9rem;">🎵 BẢNG ĐIỀU KHIỂN ÂM THANH TRUNG TÂM:</p>
+        <audio id="master-topik-audio" controls style="width: 100%; height: 35px;"></audio>
+        <div id="audio-status-tip" style="margin-top: 5px; font-size: 0.8rem; color: #7f8c8d; font-style: italic; text-align: center;">
+            Đang dừng phát. Hãy nhấn nút "Phát riêng câu này" ở bên dưới để nhảy nhanh!
+        </div>
+    </div>
+
+    <div id="listening-questions-list"></div>
+
+    <div style="text-align: center; margin-top: 30px; border-top: 2px solid #eee; padding-top: 20px;">
+        <button onclick="submitListeningTest()" class="btn" style="background: #27ae60; font-size: 1.1rem; padding: 12px 30px; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            ✅ Nộp Bài & Xem Kết Quả
+        </button>
+        <div id="listening-result-summary" style="margin-top: 15px; font-size: 1.2rem; font-weight: bold; color: #2c3e50;"></div>
+    </div>
+</div>
 </div>
 
 <script>
+// --- ĐIỀU HƯỚNG CHUYỂN ĐỔI CHẾ ĐỘ GIAO DIỆN ---
+function switchMode(mode) {
+    const practiceSec = document.querySelector('.container'); // Giữ container từ vựng cũ
+    const listeningSec = document.getElementById('listening-test-section');
+    const audioPlayer = document.getElementById('topik-audio-player');
+
+    if (mode === 'listening-test') {
+        if(practiceSec) practiceSec.style.display = 'none';
+        listeningSec.style.display = 'block';
+        renderListeningQuestions();
+    } else {
+        if(listeningSec) listeningSec.style.display = 'none';
+        if(practiceSec) practiceSec.style.display = 'block';
+        if(audioPlayer) audioPlayer.pause(); // Tắt audio thi nghe khi thoát
+    }
+}
+
+// --- DỮ LIỆU CÂU HỎI NGHE TOPIK I ĐỀ 35 ---
+// Trích xuất trực tiếp chính xác từ file tài liệu 35회 TOPIK1(듣기,읽기).pdf
+// --- KHỞI TẠO BIẾN ĐIỀU KHIỂN NGHE NHẢY GIÂY ---
+let masterAudioPlayer = null;
+
+// Hàm kích hoạt nạp file âm thanh từ thiết bị vào bảng điều khiển trung tâm
+function loadAudioFile(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const fileURL = URL.createObjectURL(file);
+        
+        masterAudioPlayer = document.getElementById('master-topik-audio');
+        masterAudioPlayer.src = fileURL;
+        
+        // Hiển thị thanh phát trung tâm lên
+        document.getElementById('master-audio-box').style.display = 'block';
+        alert("🎯 Đã đồng bộ file âm thanh! Bây giờ bạn chỉ cần bấm nút nghe ở từng câu hỏi.");
+        renderListeningQuestions();
+    }
+}
+
+// Hàm ra lệnh nhảy đến số giây chính xác của câu hỏi và phát nhạc
+function jumpToTimeAndPlay(seconds, questionId) {
+    if (!masterAudioPlayer) {
+        alert("⚠️ Vui lòng bấm nút 'Chọn file' ở trên đầu trang trước khi nghe!");
+        return;
+    }
+    
+    // Thực hiện nhảy thời gian (tời câu) tự động
+    masterAudioPlayer.currentTime = seconds;
+    masterAudioPlayer.play();
+    
+    // Cập nhật trạng thái thông báo cho học viên dễ nhìn
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const timeString = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    document.getElementById('audio-status-tip').innerHTML = `🔥 Đang phát <b>Câu ${questionId}</b> (Bắt đầu tại mốc thời gian: <span style="color:#e74c3c;">${timeString}</span>)`;
+}
+
+// --- DỮ LIỆU CẤU HÌNH 30 CÂU HỎI NGHE KÈM MỐC THỜI GIAN NHẢY GIÂY ---
+// Mẹo: start: 125 nghĩa là câu đó bắt đầu ở phút thứ 2, giây thứ 5 (2 * 60 + 5 = 125 giây). Bạn có thể tự sửa số này!
+const listeningQuestionsData = [
+    { id: 1, score: 4, start: 125, options: ["① 네, 우산이에요.", "② 아니요, 우산을 써요.", "③ 네, 우산이 있어요.", "④ 아니요, 우산이 아니에요."], correct: 3 },
+    { id: 2, score: 4, start: 165, options: ["① 네, 회사에 없어요.", "② 아니요, 회사에 안 가요.", "③ 네, 회사가 아니에요.", "④ 아니요, 회사에서 일해요."], correct: 2 },
+    { id: 3, score: 3, start: 205, options: ["① 친구와 마셨어요.", "② 한 잔 마셨어요.", "③ 커피숍에서 마셨어요.", "④ 오늘 아침에 마셨어요."], correct: 1 },
+    { id: 4, score: 3, start: 245, options: ["① 어제 샀어요.", "② 아주 예뻐요.", "③ 제 바지예요.", "④ 오늘 입었어요."], correct: 2 },
+    { id: 5, score: 4, start: 290, options: ["① 잘 가요.", "② 고마워요.", "③ 반가워요.", "④ 안녕하세요."], correct: 1 },
+    { id: 6, score: 3, start: 330, options: ["① 네, 부탁합니다.", "② 네, 들어오세요.", "③ 네, 그렇습니다.", "④ 네, 안녕히 가세요."], correct: 2 },
+    { id: 7, score: 3, start: 380, options: ["① 꽃집 (Cửa hàng hoa)", "② 약국 (Hiệu thuốc)", "③ 문구점 (Cửa hàng văn phòng phẩm)", "④ 커피숍 (Quán cà phê)"], correct: 2 },
+    { id: 8, score: 3, start: 425, options: ["① 공항 (Sân bay)", "② 시장 (Chợ)", "③ 빵집 (Tiệm bánh)", "④ 교실 (Lớp học)"], correct: 2 },
+    { id: 9, score: 3, start: 470, options: ["① 미용실 (Tiệm cắt tóc)", "② 사진관 (Tiệm chụp ảnh)", "③ 도서관 (Thư viện)", "④ 우체국 (Bưu điện)"], correct: 3 },
+    { id: 10, score: 4, start: 515, options: ["① 서점 (Hiệu sách)", "② 식당 (Nhà hàng)", "③ 수영장 (Bể bơi)", "④ 운동장 (Sân vận động)"], correct: 1 },
+    { id: 11, score: 3, start: 565, options: ["① 값 (Giá cả)", "② 맛 (Hương vị)", "③ 일 (Công việc)", "④ 집 (Nhà)"], correct: 2 },
+    { id: 12, score: 3, start: 610, options: ["① 생일 (Sinh nhật)", "② 날짜 (Ngày tháng)", "③ 나이 (Tuổi tác)", "④ 시간 (Thời gian)"], correct: 4 },
+    { id: 13, score: 4, start: 655, options: ["① 선물 (Quà tặng)", "② 계절 (Mùa)", "③ 취미 (Sở thích)", "④ 사진 (Hình ảnh)"], correct: 3 },
+    { id: 14, score: 3, start: 700, options: ["① 여행 (Du lịch)", "② 요일 (Thứ trong tuần)", "③ 날씨 (Thời tiết)", "④ 휴일 (Ngày nghỉ)"], correct: 3 },
+    { id: 15, score: 4, start: 750, options: ["① 그림 1 (Lễ tốt nghiệp - Tặng hoa)", "② 그림 2 (Sân vườn - Tưới cây)", "③ 그림 3 (Lễ tốt nghiệp - Chụp ảnh)", "④ 그림 4 (Cửa hàng hoa - Chọn hoa)"], correct: 1 },
+    { id: 16, score: 4, start: 810, options: ["① 그림 1 (Công viên - Chạy bộ)", "② 그림 2 (Đạp xe đôi)", "③ 그림 3 (Đạp xe riêng rẽ)", "④ 그림 4 (Sửa chữa xe đạp)"], correct: 2 },
+    { id: 17, score: 3, start: 870, options: ["① 여자는 돈을 찾았습니다.", "② 남자는 지금 은행에 있습니다.", "③ 여자는 은행에 가려고 합니다.", "④ 남자는 은행에 가는 길을 모릅니다."], correct: 3 },
+    { id: 18, score: 3, start: 920, options: ["① 여자는 미술관에서 일하고 있습니다.", "② 남자는 미술관 안을 구경하고 있습니다.", "③ 남자는 여자에게 사진기를 빌리려고 합니다.", "④ 여자는 사진기를 가지고 미술관에 들어갔습니다."], correct: 4 },
+    { id: 19, score: 3, start: 975, options: ["① 여자는 토요일에 할 일이 없습니다.", "② 남자는 직접 빵을 만들어 먹습니다.", "③ 여자는 빵 만드는 것을 좋아합니다.", "④ 남자는 여자와 같이 빵을 만듭니다."], correct: 2 },
+    { id: 20, score: 3, start: 1030, options: ["① 남자는 지금 집에 있습니다.", "② 여자는 회의 자료가 필요합니다.", "③ 여자는 다른 사람에게 연락을 했습니다.", "④ 남자는 여자에게 회의 자료를 보냈습니다."], correct: 2 },
+    { id: 21, score: 3, start: 1085, options: ["① 여자는 회사 일이 일찍 끝납니다.", "② 여자는 여권을 신청하고 싶어 합니다.", "③ 남자는 여권을 신청하는 곳을 모릅니다.", "④ 남자는 인터넷으로 여권을 신청합니다."], correct: 2 },
+    { id: 22, score: 3, start: 1140, options: ["① 이 일은 주말에 합니다.", "② 이 일은 백화점에서 합니다.", "③ 이 일은 오늘부터 시작합니다.", "④ 이 일은 일주일에 세 시간 합니다."], correct: 2 },
+    { id: 23, score: 3, start: 1195, options: ["① 이 식당은 메뉴가 하나입니다.", "② 이 식당은 회사 안에 있습니다.", "③ 이 식당은 늦게 문을 ã đóng습니다.", "④ 이 식당은 손님이 별로 없습니다."], correct: 1 },
+    { id: 24, score: 3, start: 1250, options: ["① 이 가방은 인기가 있습니다.", "② 이 가방은 주머니가 없습니다.", "③ 이 가방은 색깔이 한 가지입니다.", "④ 이 가방은 튼튼하지만 무겁습니다."], correct: 1 },
+    { id: 25, score: 3, start: 1310, options: ["① 부탁 (Nhờ vả)", "② 질문 (Câu hỏi)", "③ 초대 (Mời mọc)", "④ 안내 (Hướng dẫn)"], correct: 4 },
+    { id: 26, score: 4, start: 1365, options: ["① 사람들은 지금 호텔 방에 있습니다.", "② 사람들은 짐을 직접 가지고 가야 합니다.", "③ 수영장을 이용하려면 돈을 내야 합니다.", "④ 도움이 필요하면 301호로 연락하면 됩니다."], correct: 4 },
+    { id: 27, score: 3, start: 1420, options: ["① 소포를 빨리 보내는 방법", "② 소포를 싸게 보내는 방법", "③ 소포를 잘 포장하는 방법", "④ 소포를 쉽게 보내는 방법"], correct: 1 },
+    { id: 28, score: 4, start: 1480, options: ["① 여자는 부산에서 소포를 보냅니다.", "② 여자는 빨리 소포를 받고 싶어 합니다.", "③ 여자는 소포를 특급으로 보낼 겁니다.", "④ 여자는 내일 오전에 소포를 받을 겁니다."], correct: 2 },
+    { id: 29, score: 3, start: 1540, options: ["① 할머니들께 드리고 싶어서", "② 할머니들과 같이 먹고 싶어서", "③ 김치를 한번 담가 보고 싶어서", "④ 김치를 혼자 담гг기가 힘들어서"], correct: 1 },
+    { id: 30, score: 4, start: 1600, options: ["① 남자는 이 모임에 간 적이 있습니다.", "② 남자는 이번 주말에 모임에 갈 겁니다.", "③ 이 모임에서는 할머니들이 음식을 만듭니다.", "④ 이 모임에서는 이번 주말에 청소를 할 겁니다."], correct: 2 }
+];
+
+// --- HÀM TỰ ĐỘNG RENDERING DANH SÁCH CÂU HỎI RA MÀN HÌNH ---
+function renderListeningQuestions() {
+    const listContainer = document.getElementById('listening-questions-list');
+    listContainer.innerHTML = ''; 
+
+    if (!masterAudioPlayer) {
+        listContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; background: #fff; border: 1px dashed #ccc; border-radius: 8px;">
+                📭 Bước đầu tiên, hãy bấm chọn tệp tin "Topik I_35.mp3" ở trên để kích hoạt hệ thống nghe tự động từng câu câu hỏi nhé!
+            </div>
+        `;
+        return;
+    }
+
+    listeningQuestionsData.forEach((q) => {
+        let optionsHtml = '';
+        q.options.forEach((opt, idx) => {
+            const optValue = idx + 1;
+            optionsHtml += `
+                <label class="listening-opt-label" id="label-q-${q.id}-${optValue}">
+                    <input type="radio" name="listening-q-${q.id}" value="${optValue}">
+                    ${opt}
+                </label>
+            `;
+        });
+
+        const qBox = document.createElement('div');
+        qBox.className = 'listening-q-box';
+        qBox.innerHTML = `
+            <div class="listening-q-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size: 1.1rem; color: #2980b9; font-weight:bold;">🎧 Câu ${q.id}:</span>
+                <span style="color: #7f8c8d; font-size: 0.85rem;">[${q.score} điểm]</span>
+            </div>
+            
+            <div style="margin: 8px 0 12px 0;">
+                <button onclick="jumpToTimeAndPlay(${q.start}, ${q.id})" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; text-align: left; display: flex; align-items: center; gap: 8px;">
+                    ▶️ Bấm để nghe riêng Câu ${q.id}
+                </button>
+            </div>
+
+            <div class="listening-options">
+                ${optionsHtml}
+            </div>
+        `;
+        listContainer.appendChild(qBox);
+    });
+    
+    document.getElementById('listening-result-summary').innerHTML = '';
+}
+
+// --- HÀM TỰ ĐỘNG HIỂN THỊ CÂU HỎI RA GIAO DIỆN ---
+// --- HÀM TỰ ĐỘNG HIỂN THỊ CÂU HỎI VÀ CHÈN THANH AUDIO RIÊNG ---
+// Biến toàn cục lưu trữ lối đi âm thanh an toàn
+let globalAudioURL = "";
+
+// Hàm xử lý đọc file trực tiếp từ bộ nhớ máy người dùng chọn
+function loadAudioFile(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        // Tạo một đường dẫn ảo trực tiếp bỏ qua bộ lọc CORS bảo mật của trình duyệt
+        globalAudioURL = URL.createObjectURL(file);
+        alert("🎯 Kích hoạt tệp âm thanh thành công! Danh sách câu hỏi đã sẵn sàng.");
+        renderListeningQuestions(); // Cập nhật lại danh sách câu hỏi kèm nhạc phát
+    }
+}
+
+// --- HÀM TỰ ĐỘNG HIỂN THỊ CÂU HỎI VÀ CHÈN THANH AUDIO RIÊNG ---
+function renderListeningQuestions() {
+    const listContainer = document.getElementById('listening-questions-list');
+    listContainer.innerHTML = ''; // Làm sạch giao diện trước khi nạp
+
+    // Nếu học viên chưa chọn file mồi, hiển thị bảng hướng dẫn nhắc nhở
+    if (!globalAudioURL) {
+        listContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; background: #fff; border: 1px dashed #ccc; border-radius: 8px;">
+                📭 Vui lòng nhấn vào nút "Chọn tệp" ở phía trên và chọn file "Topik I_35.mp3" trên thiết bị của bạn để kích hoạt hệ thống nghe từng câu.
+            </div>
+        `;
+        return;
+    }
+
+    // Tiến hành render đầy đủ danh sách câu hỏi kèm thanh audio đã mở khóa thành công
+    listeningQuestionsData.forEach((q) => {
+        let optionsHtml = '';
+        q.options.forEach((opt, idx) => {
+            const optValue = idx + 1;
+            optionsHtml += `
+                <label class="listening-opt-label" id="label-q-${q.id}-${optValue}">
+                    <input type="radio" name="listening-q-${q.id}" value="${optValue}">
+                    ${opt}
+                </label>
+            `;
+        });
+
+        const qBox = document.createElement('div');
+        qBox.className = 'listening-q-box';
+        qBox.innerHTML = `
+            <div class="listening-q-title">
+                <span style="font-size: 1.1rem; color: #2980b9;">🎧 Câu ${q.id}:</span>
+                <span style="color: #7f8c8d; font-size: 0.85rem;">[${q.score} điểm]</span>
+            </div>
+            
+            <div style="margin: 10px 0 15px 0;">
+                <audio controls preload="metadata" style="width: 100%; height: 32px;">
+                    <source src="${globalAudioURL}" type="audio/mpeg">
+                    Trình duyệt không hỗ trợ nghe.
+                </audio>
+            </div>
+
+            <div class="listening-options">
+                ${optionsHtml}
+            </div>
+        `;
+        listContainer.appendChild(qBox);
+    });
+    
+    document.getElementById('listening-result-summary').innerHTML = '';
+}
+
+// --- HÀM CHẤM ĐIỂM VÀ KIỂM TRA ĐÁP ÁN ---
+function submitListeningTest() {
+    let totalScore = 0;
+    let userCorrectCount = 0;
+    const maxScore = listeningQuestionsData.reduce((sum, q) => sum + q.score, 0);
+
+    // Xóa màu cũ nếu có chấm lại
+    document.querySelectorAll('.listening-opt-label').forEach(el => {
+        el.classList.remove('opt-correct', 'opt-wrong');
+    });
+
+    listeningQuestionsData.forEach((q) => {
+        const selectedOpt = document.querySelector(`input[name="listening-q-${q.id}"]:checked`);
+        const correctLabel = document.getElementById(`label-q-${q.id}-${q.correct}`);
+        
+        // Luôn tô xanh đáp án đúng để học viên đối chiếu
+        if (correctLabel) {
+            correctLabel.classList.add('opt-correct');
+        }
+
+        if (selectedOpt) {
+            const userAns = parseInt(selectedOpt.value);
+            if (userAns === q.correct) {
+                totalScore += q.score;
+                userCorrectCount++;
+            } else {
+                // Nếu gõ/tích chọn sai thì tô màu đỏ vị trí chọn sai
+                const wrongLabel = document.getElementById(`label-q-${q.id}-${userAns}`);
+                if (wrongLabel) wrongLabel.classList.add('opt-wrong');
+            }
+        }
+    });
+
+    // Cuộn màn hình lên đầu hoặc vị trí bảng kết quả
+    document.getElementById('listening-result-summary').scrollIntoView({ behavior: 'smooth' });
+
+    // Hiển thị bảng tổng kết điểm số
+    const resultDiv = document.getElementById('listening-result-summary');
+    resultDiv.innerHTML = `
+        <div style="background: #e8f4f8; padding: 15px; border-radius: 6px; border: 1px solid #3498db;">
+            📊 Kết quả làm bài: Làm đúng <span style="color: #27ae60;">${userCorrectCount}/${listeningQuestionsData.length}</span> câu.<br>
+            🎯 Tổng số điểm đạt được: <span style="color: #e74c3c;">${totalScore} điểm</span>.
+        </div>
+    `;
+}
 function flipNormalCard(element, event) {
     // Nếu bấm trúng nút ngôi sao hoặc cái loa nhỏ thì không lật thẻ để tránh lỗi cuộn âm thanh
     if (event.target.classList.contains('star-btn') || event.target.closest('.speaker-btn')) {
@@ -527,6 +876,55 @@ function toggleDarkMode() {
 
     // --- 1. DỮ LIỆU FLASHCARD (Thêm câu mới vào đây) ---
     var data = [
+	// ==========================================
+// 🚀 TRỌN BỘ 46 NGỮ PHÁP (TỪ ẢNH TÀI LIỆU CỦA QUÂN)
+// ==========================================
+{ id: 'g_img_1', lesson: 'Mở rộng', type: 'grammar', kr: "V + 읍/ㅂ시다", vn: "Hãy cùng làm gì (rủ rê)", note: "Dùng trong văn nói." },
+{ id: 'g_img_2', lesson: 'Mở rộng', type: 'grammar', kr: "V + 고 싶다 / 고 싶어 하다", vn: "Muốn làm gì", note: "Chủ thể là mình: V+고 싶다. Chủ thể là người khác: V+고 싶어 하다." },
+{ id: 'g_img_3', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + 지 않다", vn: "Không làm gì hoặc không như thế nào đó", note: "Câu phủ định." },
+{ id: 'g_img_4', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)세요", vn: "Hãy làm gì", note: "Mệnh lệnh, ra lệnh." },
+{ id: 'g_img_5', lesson: 'Mở rộng', type: 'grammar', kr: "N + (으)로", vn: "Về phía, về hướng / Bằng", note: "N địa điểm + (으)로: về phía, về hướng. N phương tiện / đồ vật + (으)로: bằng." },
+{ id: 'g_img_6', lesson: 'Mở rộng', type: 'grammar', kr: "V + 을/ㄹ래요", vn: "Được không? Được chứ?", note: "Hỏi ý kiến: Bạn thấy việc... có được không?" },
+{ id: 'g_img_7', lesson: 'Mở rộng', type: 'grammar', kr: "N + 부터 ... 까지", vn: "Từ... đến...", note: "Dùng cho thời gian hoặc địa điểm." },
+{ id: 'g_img_8', lesson: 'Mở rộng', type: 'grammar', kr: "V + 을/ㄹ 것이다", vn: "Sẽ làm gì đó...", note: "Gốc: 것이다. Dùng hàng ngày: 거예요. Trang trọng: 겁니다." },
+{ id: 'g_img_9', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + 지만 / N + (이)지만", vn: "Nhưng...", note: "Nối hai vế đối lập." },
+{ id: 'g_img_10', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)려 하다", vn: "Định làm gì", note: "V + (으)려: định, để." },
+{ id: 'g_img_11', lesson: 'Mở rộng', type: 'grammar', kr: "V + 아서/어서/해서", vn: "Vì... nên; rồi", note: "Chỉ nguyên nhân hoặc thứ tự thực hiện theo thời gian." },
+{ id: 'g_img_12', lesson: 'Mở rộng', type: 'grammar', kr: "V + 을/ㄹ까요?", vn: "Hay là ... nhỉ? Nhé? Nhỉ?", note: "Hỏi ý kiến, rủ rê." },
+{ id: 'g_img_13', lesson: 'Mở rộng', type: 'grammar', kr: "못 + V", vn: "Không thể làm gì", note: "Có năng lực nhưng vì lý do khách quan không làm được." },
+{ id: 'g_img_14', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)ㄹ 수 있다/없다", vn: "Có thể / không thể làm gì", note: "Chỉ năng lực, khả năng." },
+{ id: 'g_img_15', lesson: 'Mở rộng', type: 'grammar', kr: "V + 기/는 것", vn: "Việc...", note: "Chuyển động từ thành danh từ." },
+{ id: 'g_img_16', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)러 가다", vn: "Đi để làm gì", note: "Chỉ mục đích của việc di chuyển." },
+{ id: 'g_img_17', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + 을/ㄹ 때", vn: "Khi, lúc", note: "Thời điểm diễn ra hành động." },
+{ id: 'g_img_18', lesson: 'Mở rộng', type: 'grammar', kr: "V + 아/어/해 주다", vn: "Làm gì đó cho ai đó", note: "Thực hiện hành động giúp người khác." },
+{ id: 'g_img_19', lesson: 'Mở rộng', type: 'grammar', kr: "N + 만", vn: "Chỉ", note: "Giới hạn sự vật, sự việc." },
+{ id: 'g_img_20', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + (으)니까 / N + (이)니까", vn: "Vì... nên", note: "Chỉ nguyên nhân, lý do." },
+{ id: 'g_img_21', lesson: 'Mở rộng', type: 'grammar', kr: "V + 지 말다", vn: "Đừng làm gì", note: "Mệnh lệnh: V+ 지 마세요 / 지마십시요 (bất quy tắc ㄹ). Thỉnh dụ, nhờ vả: V+ 지 맙시다." },
+{ id: 'g_img_22', lesson: 'Mở rộng', type: 'grammar', kr: "V + 아/어/해도 되다", vn: "Làm gì đó thì được", note: "Sự cho phép." },
+{ id: 'g_img_23', lesson: 'Mở rộng', type: 'grammar', kr: "N + 보다", vn: "So với", note: "Hay sử dụng với 더 (hơn), 덜 (kém)." },
+{ id: 'g_img_24', lesson: 'Mở rộng', type: 'grammar', kr: "Định ngữ của động từ", vn: "Cụm danh từ", note: "Quá khứ: V+ 은/ㄴ + N. Hiện tại: V+ 는 + N." },
+{ id: 'g_img_25', lesson: 'Mở rộng', type: 'grammar', kr: "Định ngữ của tính từ", vn: "Cụm danh từ", note: "Hiện tại: A + 은/ㄴ + N." },
+{ id: 'g_img_26', lesson: 'Mở rộng', type: 'grammar', kr: "N + 마다", vn: "Mỗi", note: "Chỉ sự lặp lại." },
+{ id: 'g_img_27', lesson: 'Mở rộng', type: 'grammar', kr: "V + 아/어/해야 하다/되다", vn: "Phải làm gì đó", note: "Chỉ nghĩa vụ, bắt buộc." },
+{ id: 'g_img_28', lesson: 'Mở rộng', type: 'grammar', kr: "V + 지 못 하다", vn: "Không thể làm gì", note: "Muốn làm nhưng không làm được." },
+{ id: 'g_img_29', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + (으)면", vn: "Nếu làm gì, nếu như thế nào", note: "Câu điều kiện." },
+{ id: 'g_img_30', lesson: 'Mở rộng', type: 'grammar', kr: "V + 기 전에", vn: "Trước khi làm gì", note: "Chỉ trình tự thời gian." },
+{ id: 'g_img_31', lesson: 'Mở rộng', type: 'grammar', kr: "V + 은/ㄴ 후에", vn: "Sau khi làm gì", note: "Chỉ trình tự thời gian." },
+{ id: 'g_img_32', lesson: 'Mở rộng', type: 'grammar', kr: "V + 을/ㄹ게요", vn: "Sẽ làm gì", note: "Dùng để thể hiện ý định, quyết định hoặc lời hứa của người nói." },
+{ id: 'g_img_33', lesson: 'Mở rộng', type: 'grammar', kr: "V + 아/어/해 보다", vn: "Thử làm gì", note: "Trải nghiệm." },
+{ id: 'g_img_34', lesson: 'Mở rộng', type: 'grammar', kr: "N + (이)나 / V, A + 거나", vn: "Hoặc", note: "Lựa chọn 1 trong 2." },
+{ id: 'g_img_35', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + (으)면 좋겠다", vn: "Nếu ... thì tốt, ước gì", note: "Thể hiện mong muốn." },
+{ id: 'g_img_36', lesson: 'Mở rộng', type: 'grammar', kr: "V + 기 위해서", vn: "Vì, để, với mục đích...", note: "Ví dụ: 통역사가 되기 위해서 한국어를 배워요 (Tôi học tiếng Hàn để trở thành thông dịch viên)." },
+{ id: 'g_img_37', lesson: 'Mở rộng', type: 'grammar', kr: "A + 아/어/해 지다", vn: "Trở nên như thế nào đó", note: "Sự thay đổi trạng thái." },
+{ id: 'g_img_38', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + 기 때문에 / N + 때문에", vn: "Vì... nên", note: "Ví dụ: 오늘은 비가 오기 때문에 등산을 안 가요 (Vì hôm nay trời mưa nên tôi không đi leo núi)." },
+{ id: 'g_img_39', lesson: 'Mở rộng', type: 'grammar', kr: "V + 고 있다", vn: "Đang làm gì", note: "Thì hiện tại tiếp diễn." },
+{ id: 'g_img_40', lesson: 'Mở rộng', type: 'grammar', kr: "V + 은/ㄴ 적이 있다/없다", vn: "Đã từng/chưa từng làm gì", note: "Kinh nghiệm trong quá khứ." },
+{ id: 'g_img_41', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)면서", vn: "Vừa ... vừa, trong bối cảnh", note: "Ví dụ: 커피를 마시면서 이야기를 합니다 (Vừa uống cafe vừa nói chuyện)." },
+{ id: 'g_img_42', lesson: 'Mở rộng', type: 'grammar', kr: "V + (으)면 안 되다", vn: "Nếu làm gì thì không được", note: "Ví dụ: 수업 시간에 늦으면 안 됩니다 (Vào lớp muộn là không được)." },
+{ id: 'g_img_43', lesson: 'Mở rộng', type: 'grammar', kr: "V + 을/ㄹ 것 같다", vn: "Hình như, có lẽ (dự đoán)", note: "Ví dụ: 내일은 비가 안 올 것 같아요 (Có lẽ ngày mai trời sẽ không mưa)." },
+{ id: 'g_img_44', lesson: 'Mở rộng', type: 'grammar', kr: "V + 은/ㄴ 지 + 시간 + 되다", vn: "Đã bao lâu kể từ khi làm gì", note: "Ví dụ: 한국어를 배운 지 얼마나 되었어요? (Bạn học tiếng Hàn bao lâu rồi?)." },
+{ id: 'g_img_45', lesson: 'Mở rộng', type: 'grammar', kr: "V + 기로 하다", vn: "Quyết định làm gì", note: "Hay sử dụng ở thì quá khứ: đã quyết định làm gì." },
+{ id: 'g_img_46', lesson: 'Mở rộng', type: 'grammar', kr: "V, A + 은/ㄴ/는데", vn: "Đưa ra bối cảnh", note: "Sử dụng khi đưa ra bối cảnh trước khi đề nghị, yêu cầu. VD: 날씨가 좋은데 공원에 놀러 갈까요? (Thời tiết đẹp quá, chúng ta đi công viên chơi nhé?)." },
 	// ==========================================
 // 📚 BỘ DỮ LIỆU NGỮ PHÁP SC1 (TRỌN BỘ 44 CẤU TRÚC 100%)
 // ==========================================
